@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
-#include "cstring"
+#include <cstring>
+#include <array>
 
 namespace fs = std::filesystem;
 
@@ -22,14 +23,13 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
 {   
     std::string path(pathname);
     std::vector<std::string> res;
-    res.push_back("<-BACK");
-    for(auto& entry : fs::directory_iterator(path))
+    res.push_back("<= BACK");
+    for(auto& entry : fs::directory_iterator(pathname))
     {   
-        path = entry.path().string();
-        if(fs::is_directory(entry))
+        path = fs::canonical(entry).string();
+        if(fs::is_directory(path))
         {
-            size_t pos = path.find_last_of('/');
-            res.push_back(path.substr(pos+1));
+            res.push_back(fs::canonical(path));
         }
     
         size_t pos = path.find_last_of('.');
@@ -48,75 +48,56 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
     return res;
 }
 
-void draw_save(const char* filename, const char* buffer, const int buffer_size, bool& bt_save)
+
+static bool open_prompt = false;
+void draw_save(std::string& filename, const char* buffer, const int buffer_size, bool& bt_save)
 {
     ImGui::SetNextWindowSize(ImVec2(500, 400));
     
-    if(bt_save && ImGui::Begin("Save As...", &bt_save))
+    if(ImGui::Begin("Save As...", &bt_save))
     {   
-        fs::path abs_path = fs::absolute(fs::path(filename));
-        std::string real_path = abs_path.string();
-        if(strcmp(filename, ".") == 0)
-            real_path.pop_back();
-        std::vector<std::string> files = get_directory_files(real_path);
-
-        ImGui::Text(("[D] " + real_path + "\n\n").c_str());
-        int i = 0;
-        int selected = -1;
-        for(const auto& file : files)
-        {
-            if(ImGui::Selectable(file.c_str()))
+        ImGui::Text(("[D] " + filename + "\n\n").c_str());
+            std::vector<std::string> files = get_directory_files(filename);
+            
+            for(auto& file : files)
             {
-                if(fs::is_directory(fs::path(file)))
+                if(ImGui::Selectable(file.c_str()))
                 {
-                    std::cout << file << std::endl;
+                    if(file == "<= BACK")
+                        filename = fs::canonical(filename).parent_path();
+                    else    
+                        filename = fs::canonical(fs::path(file));
+                    if(!fs::is_directory(filename))
+                    {
+                        
+                    }
+                    
                 }
-                selected = i;
             }
-            i++;
-        }
-
-        if(ImGui::Button("OK"))
-        {
-            if(selected != -1)
-                save(files[selected].c_str(), buffer, buffer_size);
-            bt_save = false;
-        }
 
         ImGui::End();
     }
 }
 
+
+//FIXIT what():  filesystem error: cannot make canonical path: No such file or directory [imstb_textedit.h]
 void draw_open(std::string& filename, char*src_code_buffer, u_int32_t buffer_size, bool& is_clicked_OPEN)
 {
     ImGui::SetNextWindowSize(ImVec2(500, 400));
             ImGui::Begin("Open", &is_clicked_OPEN);
-            
-            fs::path abs_path = fs::absolute(filename);
-            if(filename == ".")
-                filename = abs_path.string().substr(0, abs_path.string().size()-1);
 
             ImGui::Text(("[D] " + filename + "\n\n").c_str());
             std::vector<std::string> files = get_directory_files(filename);
-            for(const auto& file : files)
+            
+            for(auto& file : files)
             {
                 if(ImGui::Selectable(file.c_str()))
                 {
-                    std::string real_name = filename.substr(filename.find_last_of('/')+1);
-                    std::cout << real_name << std::endl;
-                    if(file == "<-BACK")
-                    {
-                            filename.pop_back();
-                            filename = filename.substr(0, filename.find_last_of('/'));
-                    }
-
-                    else if(fs::is_directory(fs::path(file)))
-                        {
-                            if(real_name == file)
-                                continue;
-                            filename = fs::absolute(fs::path(file));
-                        }
-                    else
+                    if(file == "<= BACK")
+                        filename = fs::canonical(filename).parent_path();
+                    else    
+                        filename = fs::canonical(fs::path(file));
+                    if(!fs::is_directory(filename))
                     {
                         std::ifstream in_file(filename);
                         std::string _str;
@@ -128,6 +109,7 @@ void draw_open(std::string& filename, char*src_code_buffer, u_int32_t buffer_siz
                         }
                         is_clicked_OPEN = false;
                     }
+                    
                 }
             }
 

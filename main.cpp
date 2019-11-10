@@ -10,7 +10,10 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <filesystem>
 #include "editor_util/editor_util.hpp"
+
+namespace fs = std::filesystem;
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -198,6 +201,10 @@ int main(int, char**)
         if(is_clicked_OPEN)
         {
             static std::string file = ".";
+            file = fs::canonical(file).string();
+            //file.pop_back(); file.pop_back();
+
+            //std::cout << file << std::endl;
             draw_open(file, src_code_buffer, sizeof(src_code_buffer), is_clicked_OPEN); //  editor_util/editor_util.hpp
             std::cout << src_code_buffer;
         }
@@ -207,7 +214,8 @@ int main(int, char**)
         if(bt_Save)
         {   
             static std::string file = ".";
-            draw_save(".", src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
+            file = fs::canonical(file);
+            draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
         }
         //std::cout << "Iteration " << counter_it++ << ": " << std::boolalpha << is_clicked_OPEN << std::endl;
         // Rendering
