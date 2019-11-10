@@ -69,7 +69,17 @@ void draw_save(std::string& filename, const char* buffer, const int buffer_size,
                         filename = fs::canonical(fs::path(file));
                     if(!fs::is_directory(filename))
                     {
-                        
+                        if(!fs::is_empty(filename))
+                        {
+                            
+                        }
+
+                        else
+                        {
+                            save(filename.c_str(), buffer, buffer_size);
+                        }
+
+                        bt_save = false;
                     }
                     
                 }
