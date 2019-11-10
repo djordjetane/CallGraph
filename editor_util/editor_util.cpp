@@ -48,7 +48,6 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
     return res;
 }
 
-
 static bool open_prompt = false;
 void draw_save(std::string& filename, const char* buffer, const int buffer_size, bool& bt_save)
 {
@@ -71,7 +70,7 @@ void draw_save(std::string& filename, const char* buffer, const int buffer_size,
                     {
                         if(!fs::is_empty(filename))
                         {
-                            
+                            // draw popup
                         }
 
                         else
