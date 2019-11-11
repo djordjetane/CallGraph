@@ -249,7 +249,6 @@ int main(int, char**)
             //file.pop_back(); file.pop_back();
 
             //std::cout << file << std::endl;
-<<<<<<< HEAD
             draw_open(file, is_clicked_OPEN); //  editor_util/editor_util.hpp
 
             if(!fs::is_directory(file))
@@ -275,13 +274,8 @@ int main(int, char**)
                     strcat(src_code_buffer, "\n");
                 }
             }
-        }
-=======
-            draw_open(file, src_code_buffer, sizeof(src_code_buffer), is_clicked_OPEN); //  editor_util/editor_util.hpp
-            std::cout << src_code_buffer;
         }     
 
->>>>>>> 756141bdf49a3018aa758d87e4edcc34ced9b5df
         //*******************
         //SAVE BUTTON WINDOW
         //*******************
