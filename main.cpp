@@ -46,22 +46,6 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-bool is_LCTRL_pressed = false;
-bool is_S_pressed = false;
-bool key_event_save = false;
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-        if (key == GLFW_KEY_LEFT_CONTROL) is_LCTRL_pressed = action == GLFW_PRESS;
-        if (key == GLFW_KEY_S) is_S_pressed = action == GLFW_PRESS;
-        if (is_LCTRL_pressed && is_S_pressed)
-        {
-            // now you know that both A and B keys are down, do what you need
-            key_event_save = true;
-            is_LCTRL_pressed = false;
-            is_S_pressed = false;
-        }
-}
-
 int main(int, char**)
 {
     // Setup window
@@ -169,6 +153,7 @@ int main(int, char**)
         //SOURCE CODE WINDOW
         //*******************
         {   
+            ImGui::SetNextWindowPos(ImVec2(15, 11));
             ImGui::SetNextWindowSize(ImVec2(450, 700));
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar);
             
@@ -210,7 +195,7 @@ int main(int, char**)
         //GENERATED GRAPH WINDOW
         //*******************
         {
-            ImGui::SetNextWindowPos(ImVec2(500, 20));
+            ImGui::SetNextWindowPos(ImVec2(500, 11));
             ImGui::SetNextWindowSize(ImVec2(800, 800));
             ImGui::Begin("GENERATED CALLGRAPH");
 
