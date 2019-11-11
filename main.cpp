@@ -13,7 +13,6 @@
 #include <cstring>
 #include <filesystem>
 #include "editor_util/editor_util.hpp"
-#include "graph.cpp"
 
 namespace fs = std::filesystem;
 
@@ -210,31 +209,7 @@ int main(int, char**)
         //GENERATED GRAPH WINDOW
         //*******************
         {
-            ImGui::SetNextWindowPos(ImVec2(500, 20));
-            ImGui::SetNextWindowSize(ImVec2(800, 800));
             ImGui::Begin("GENERATED CALLGRAPH");
-
-            /*
-            // PROTOTIP 
-            test::Graph test_graph(123);
-            test::Node* n1 = new test::Node(ImVec2(520, 20), 100, "Node1");
-            test::Node* n2 = new test::Node(ImVec2(530, 20), 101, "Node2");
-            test::Node* n3 = new test::Node(ImVec2(540, 20), 102, "Node3");
-            test::Node* n4 = new test::Node(ImVec2(540, 20), 103, "Node4");
-            n1->add_edge(n2);
-            n2->add_edge(n3);
-            n2->add_edge(n4);
-
-            ImGuiWindow* wwindow = ImGui::GetCurrentWindow();
-            test_graph.nodes.push_back(n1);
-            test_graph.nodes.push_back(n2);
-            test_graph.nodes.push_back(n3);
-            test_graph.nodes.push_back(n4);
-            test_graph.draw(wwindow); 
-            */
-
-            GraphGui::GraphGui graph(ImGui::GetCurrentWindow());
-            graph.draw();
 
             ImGui::End();
         }
@@ -249,7 +224,6 @@ int main(int, char**)
             //file.pop_back(); file.pop_back();
 
             //std::cout << file << std::endl;
-<<<<<<< HEAD
             draw_open(file, is_clicked_OPEN); //  editor_util/editor_util.hpp
 
             if(!fs::is_directory(file))
@@ -276,12 +250,6 @@ int main(int, char**)
                 }
             }
         }
-=======
-            draw_open(file, src_code_buffer, sizeof(src_code_buffer), is_clicked_OPEN); //  editor_util/editor_util.hpp
-            std::cout << src_code_buffer;
-        }     
-
->>>>>>> 756141bdf49a3018aa758d87e4edcc34ced9b5df
         //*******************
         //SAVE BUTTON WINDOW
         //*******************
