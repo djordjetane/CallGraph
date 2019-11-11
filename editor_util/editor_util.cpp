@@ -90,7 +90,6 @@ void draw_save(std::string& filename, const char* buffer, const int buffer_size,
 }
 
 
-//FIXIT what():  filesystem error: cannot make canonical path: No such file or directory [*.h]
 void draw_open(std::string& filename, bool& is_clicked_OPEN)
 {
     ImGui::SetNextWindowSize(ImVec2(500, 400));
