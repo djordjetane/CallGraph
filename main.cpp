@@ -6,6 +6,7 @@
 #include "imgui_util/glfw_opengl3/imgui_impl_glfw.h"
 #include "imgui_util/glfw_opengl3/imgui_impl_opengl3.h"
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -42,6 +43,22 @@ namespace fs = std::filesystem;
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
+
+bool is_LCTRL_pressed = false;
+bool is_S_pressed = false;
+bool key_event_save = false;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+        if (key == GLFW_KEY_LEFT_CONTROL) is_LCTRL_pressed = action == GLFW_PRESS;
+        if (key == GLFW_KEY_S) is_S_pressed = action == GLFW_PRESS;
+        if (is_LCTRL_pressed && is_S_pressed)
+        {
+            // now you know that both A and B keys are down, do what you need
+            key_event_save = true;
+            is_LCTRL_pressed = false;
+            is_S_pressed = false;
+        }
 }
 
 int main(int, char**)
@@ -127,7 +144,7 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     static char filename[255];
     strcpy(filename, "");
-    static char src_code_buffer[20480];
+    static char* src_code_buffer = (char*)malloc(20480);
     strcpy(src_code_buffer, "");
 
     // Main loop
@@ -144,6 +161,8 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        
 
         //*******************
         //SOURCE CODE WINDOW
@@ -205,19 +224,79 @@ int main(int, char**)
             //file.pop_back(); file.pop_back();
 
             //std::cout << file << std::endl;
-            draw_open(file, src_code_buffer, sizeof(src_code_buffer), is_clicked_OPEN); //  editor_util/editor_util.hpp
-            std::cout << src_code_buffer;
+            draw_open(file, is_clicked_OPEN); //  editor_util/editor_util.hpp
+
+            if(!fs::is_directory(file))
+            {
+                if(fs::file_size(file) > sizeof(src_code_buffer))
+                {
+                    src_code_buffer = (char*)realloc(src_code_buffer, (size_t)fs::file_size(file));
+                    if(src_code_buffer == NULL)
+                    {
+                        std::cerr << "Realloc failed\n";
+                        exit(1);
+                    }
+                }
+                strcpy(filename, file.c_str());
+                std::ifstream in_file(filename);
+                std::string _str;
+
+                strcpy(src_code_buffer, "");
+
+                while(std::getline(in_file, _str))
+                {
+                    strcat(src_code_buffer, _str.c_str());
+                    strcat(src_code_buffer, "\n");
+                }
+            }
         }
         //*******************
         //SAVE BUTTON WINDOW
         //*******************
+        static bool save_prompt = false;
+        static std::string file = ".";
         if(bt_Save)
         {   
-            static std::string file = ".";
             file = fs::canonical(file);
-            draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
+            if(bt_Save)
+                draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
         }
-        //std::cout << "Iteration " << counter_it++ << ": " << std::boolalpha << is_clicked_OPEN << std::endl;
+
+        if(key_event_save)
+        {   
+            file = fs::canonical(file);
+            if(key_event_save)
+                draw_save(file, src_code_buffer, strlen(src_code_buffer), key_event_save); //  editor_util/editor_util.hpp
+        }
+
+        if(save_prompt)
+        {
+            if(ImGui::Begin("###save_prompt", &save_prompt))
+            {
+                if(fs::is_empty(file))
+                {
+                    ImGui::Text("Do you want to overwrite?\n\n");
+                    if(ImGui::Button("OK"))
+                    {
+                        save(file.c_str(), src_code_buffer, strlen(src_code_buffer));
+                        save_prompt = false;
+                    }
+                    if(ImGui::Button("Cancel"))
+                    {
+                        save_prompt = false;
+                    }
+                }
+                else
+                {
+                    save(file.c_str(), src_code_buffer, strlen(src_code_buffer));
+                    save_prompt = false;
+                }
+                
+
+                ImGui::End();
+            }
+        }
+        
         // Rendering
         ImGui::Render();
         int display_w, display_h;
@@ -229,6 +308,8 @@ int main(int, char**)
 
         glfwSwapBuffers(window);
     }
+
+    free(src_code_buffer);
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();

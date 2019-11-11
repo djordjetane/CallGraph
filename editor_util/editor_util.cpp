@@ -32,14 +32,11 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
             res.push_back(fs::canonical(path));
         }
     
-        size_t pos = path.find_last_of('.');
-        if(pos == path.npos)
-            continue;
-        std::string extension = path.substr(pos);
-        if(extension == ".cpp" || extension == ".c" || extension == ".h" || extension == ".hpp")
-        {   
-            pos = path.find_last_of('/');
-            res.push_back(path.substr(pos+1));
+        // filter extension .cpp .hpp .h
+        else
+        {
+            if(fs::path(path).extension() == ".cpp" || fs::path(path).extension() == ".hpp" || fs::path(path).extension() == ".h")
+                res.push_back(path);
         }
     }
 
@@ -68,15 +65,19 @@ void draw_save(std::string& filename, const char* buffer, const int buffer_size,
                         filename = fs::canonical(fs::path(file));
                     if(!fs::is_directory(filename))
                     {
-                        if(!fs::is_empty(filename))
+                        /*if(!fs::is_empty(filename))
                         {
-                            // draw popup
+                            ImGui::OpenPopup("###open_popup");
+
+                            ImGui::Text("asddddddddddddddddddddddddddddddasdasdasd");
+                            ImGui::CloseCurrentPopup();
+                            
                         }
 
                         else
                         {
                             save(filename.c_str(), buffer, buffer_size);
-                        }
+                        }*/
 
                         bt_save = false;
                     }
@@ -89,36 +90,44 @@ void draw_save(std::string& filename, const char* buffer, const int buffer_size,
 }
 
 
-//FIXIT what():  filesystem error: cannot make canonical path: No such file or directory [imstb_textedit.h]
-void draw_open(std::string& filename, char*src_code_buffer, u_int32_t buffer_size, bool& is_clicked_OPEN)
+//FIXIT what():  filesystem error: cannot make canonical path: No such file or directory [*.h]
+void draw_open(std::string& filename, bool& is_clicked_OPEN)
 {
     ImGui::SetNextWindowSize(ImVec2(500, 400));
             ImGui::Begin("Open", &is_clicked_OPEN);
 
             ImGui::Text(("[D] " + filename + "\n\n").c_str());
-            std::vector<std::string> files = get_directory_files(filename);
-            
-            for(auto& file : files)
+
+            if(!fs::is_directory(filename))
             {
-                if(ImGui::Selectable(file.c_str()))
+                is_clicked_OPEN = false;
+            }
+            else
+            {
+                std::vector<std::string> files = get_directory_files(filename);
+                
+                for(auto& file : files)
                 {
-                    if(file == "<= BACK")
-                        filename = fs::canonical(filename).parent_path();
-                    else    
-                        filename = fs::canonical(fs::path(file));
-                    if(!fs::is_directory(filename))
+                    // getting name of file
+                    int pos = file.find_last_of("/");
+                    if(pos == file.npos)
+                        pos = 0;
+                    else
+                        pos++;
+                    std::string name = file.substr(pos);
+                    if(ImGui::Selectable(name.c_str()))
                     {
-                        std::ifstream in_file(filename);
-                        std::string _str;
-                        strcpy(src_code_buffer, "");
-                        while(std::getline(in_file, _str))
+                        if(file == "<= BACK")
+                            filename = fs::canonical(filename).parent_path();
+                        else    
+                            filename = fs::canonical(fs::path(file));
+                        if(!fs::is_directory(filename))
                         {
-                            strcat(src_code_buffer, _str.c_str());
-                            strcat(src_code_buffer, "\n");
+
+                            is_clicked_OPEN = false;
                         }
-                        is_clicked_OPEN = false;
+                        
                     }
-                    
                 }
             }
 
