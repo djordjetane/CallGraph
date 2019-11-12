@@ -176,14 +176,25 @@ int main(int, char**)
         {
             key_event_save = true;
         }
+        // SAVE AS
+        if(io.KeysDown['S'] && io.KeyShift && io.KeyCtrl)
+        {
+            key_event_save = true;
+            strcpy(filename, "");
+        }
+        // EXIT
+        if(io.KeysDown['Q'] && io.KeyCtrl)
+        {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
 
         //*******************
         //SOURCE CODE WINDOW
         //*******************
         {   
-            ImGui::SetNextWindowPos(ImVec2(15, 11));
-            ImGui::SetNextWindowSize(ImVec2(450, 700));
-            ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar);
+            ImGui::SetNextWindowPos(ImVec2(15, 10));
+            ImGui::SetNextWindowSize(ImVec2(450, 705));
+            ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
             
             if(ImGui::BeginMenuBar())
             {
@@ -201,10 +212,30 @@ int main(int, char**)
                     {
                         bt_Save = true;
                     }
-                    if(ImGui::MenuItem("Save As..."))
+                    if(ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                     {
                         bt_Save = true;
+                        strcpy(filename, "");
                     }
+                    if(ImGui::MenuItem("Exit", "Ctrl+Q"))
+                    {
+                        glfwSetWindowShouldClose(window, GLFW_TRUE);
+                    }
+                    ImGui::EndMenu();
+                }
+                if(ImGui::BeginMenu("Edit"))
+                {
+                    if(ImGui::MenuItem("Undo", "Ctrl+Z"))
+                    {}
+                    if(ImGui::MenuItem("Redo", "Ctrl+Y"))
+                    {}
+                    if(ImGui::MenuItem("Cut", "Ctrl+X"))
+                    {}
+                    if(ImGui::MenuItem("Copy", "Ctrl+C"))
+                    {}
+                    if(ImGui::MenuItem("Paste", "Ctrl+V"))
+                    {}
+
                     ImGui::EndMenu();
                 }
                 
@@ -221,12 +252,24 @@ int main(int, char**)
                     exit(1);
                 }
             }
-            size_t written = strlen(src_code_buffer);
-            ImGui::InputTextMultiline("###input_src", src_code_buffer, buffer_size, ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
-            if(written == strlen(src_code_buffer))
-                unsaved = true;
+
+            // Writing file name instead of absoulte path
+            char* name = NULL;
+            name = strrchr(filename, '/');
+            if(name == NULL)
+                name = &filename[0];
             else
-                unsaved = false;
+                name++;
+            
+
+            ImGui::Text("%s", name);
+            ImGui::SameLine();
+            ImGui::Text("%s", (unsaved ? "*" : ""));
+
+            size_t written = strlen(src_code_buffer); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
+            ImGui::InputTextMultiline("###input_src", src_code_buffer, buffer_size, ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
+            if(written != strlen(src_code_buffer))
+                unsaved = true;
 
             ImGui::End();
         }
@@ -235,9 +278,9 @@ int main(int, char**)
         //GENERATED GRAPH WINDOW
         //*******************
         {
-            ImGui::SetNextWindowPos(ImVec2(500, 11));
-            ImGui::SetNextWindowSize(ImVec2(800, 800));
-            ImGui::Begin("GENERATED CALLGRAPH");
+            ImGui::SetNextWindowPos(ImVec2(470, 10));
+            ImGui::SetNextWindowSize(ImVec2(800, 705));
+            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse);
 
             /*
             // PROTOTIP 
@@ -271,6 +314,22 @@ int main(int, char**)
         if(is_clicked_NEW)
         {
             key_event_new = false;
+            static std::string file = ".";
+            file = fs::canonical(file);
+            static bool write = false;
+
+            draw_filebrowser(NEW, file, write, is_clicked_NEW);
+            if(write)
+            {
+                strcpy(filename, file.c_str());
+                if(creat(filename, 0644) == -1)
+                {
+                    std::cerr << "Failed to create file\n";
+                    exit(1);
+                }
+                is_clicked_NEW = false;
+                write = false;
+            }
         }
 
         //*******************
@@ -283,9 +342,7 @@ int main(int, char**)
             static bool write = false;
             static std::string file = ".";
             file = fs::canonical(file).string();
-            //file.pop_back(); file.pop_back();
 
-            //std::cout << file << std::endl;
             draw_filebrowser(OPEN, file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
             if(write && fs::is_regular_file(file))
             {

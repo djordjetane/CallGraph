@@ -40,7 +40,8 @@ void FBAction_to_string(const FBAction& action)
         strcpy(action_string, "SAVE AS...");
         break;
     default:
-        break;
+        std::cerr << "Unknown action for filebrowser\n";
+        exit(1);
     }
 }
 
@@ -73,6 +74,7 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
 void draw_filebrowser(const FBAction& action, std::string& filename, bool& write, bool& is_clicked_OPEN)
 {
     static char new_name[64] = "";
+    static std::string error_msg = "";
     ImGui::SetNextWindowSize(ImVec2(500, 400));
     FBAction_to_string(action);
     if(ImGui::Begin(action_string, &is_clicked_OPEN))
@@ -80,7 +82,7 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
         if(!fs::is_directory(filename))
         {
             // getting name of file
-            int pos = filename.find_last_of("/");
+            size_t pos = filename.find_last_of("/");
             if(pos == filename.npos)
                 pos = 0;
             else
@@ -88,17 +90,17 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
             std::string name = filename.substr(pos);
             strcpy(new_name, name.c_str());
             filename = fs::path(filename).parent_path();
-            ImGui::Text(("[D] " + filename + "\n\n").c_str());
+            ImGui::Text("[D] %s\n\n", filename.c_str());
         }
         else
         {
-            ImGui::Text(("[D] " + filename + "\n\n").c_str());
+            ImGui::Text("[D] %s\n\n", filename.c_str());
             std::vector<std::string> files = get_directory_files(filename);
             
             for(auto& file : files)
             {
                 // getting name of file
-                int pos = file.find_last_of("/");
+                size_t pos = file.find_last_of("/");
                 if(pos == file.npos)
                     pos = 0;
                 else
@@ -119,14 +121,14 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
         }
             ImGui::InputText("###input_filename", new_name, 64);
             ImGui::SameLine();
-            ImGui::Text(".cpp, .hpp, .h");
+            ImGui::Text("(*.cpp, *.hpp, *.h)");
             if(ImGui::Button("OK"))
             {
                 if(fs::is_directory(filename))
                 {
                     if(strcmp(new_name, "") == 0)
                     {
-                        ImGui::Text("Please enter file name\n");
+                        // ImGui::Text("Please enter file name\n");
                     }
                     else
                     {
@@ -139,9 +141,10 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
                 }
                 else
                 {
-                    ImGui::Text("File already exists\n");
+                    // ImGui::Text("File already exists\n");
                 }
             }
+            ImGui::SameLine();
             if(ImGui::Button("Cancel"))
             {
                 is_clicked_OPEN = false;
