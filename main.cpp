@@ -12,6 +12,9 @@
 #include <fstream>
 #include <cstring>
 #include <filesystem>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "editor_util/editor_util.hpp"
 #include "graph.cpp"
 
@@ -44,21 +47,6 @@ namespace fs = std::filesystem;
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
-}
-
-bool is_LCTRL_pressed = false;
-bool is_S_pressed = false;
-bool key_event_save = false;
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-        if (key == GLFW_KEY_LEFT_CONTROL) is_LCTRL_pressed = action == GLFW_PRESS;
-        if (key == GLFW_KEY_S) is_S_pressed = action == GLFW_PRESS;
-        if (is_LCTRL_pressed && is_S_pressed)
-        {
-            key_event_save = true;
-            is_LCTRL_pressed = false;
-            is_S_pressed = false;
-        }
 }
 
 int main(int, char**)
@@ -139,12 +127,19 @@ int main(int, char**)
     //IM_ASSERT(font != NULL);
 
     // Our state
+    static bool is_clicked_NEW = false;
     static bool is_clicked_OPEN = false;
     static bool bt_Save = false;
+    static bool key_event_new = false;
+    static bool key_event_open = false;
+    static bool key_event_save = false;
+    static bool unsaved = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     static char filename[255];
     strcpy(filename, "");
-    static char* src_code_buffer = (char*)malloc(20480);
+    static size_t buffer_size = 1 << 20;
+    static char* src_code_buffer = (char*)malloc(buffer_size);
+    const size_t alloc_step = 1 << 8;
     strcpy(src_code_buffer, "");
 
     // Main loop
@@ -162,7 +157,25 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        
+
+        //*******************
+        // KEY EVENTS
+        //*******************
+        // NEW
+        if(io.KeysDown['N'] && io.KeyCtrl)
+        {
+            key_event_new = true;
+        }
+        // OPEN
+        if(io.KeysDown['O'] && io.KeyCtrl)
+        {
+            key_event_open = true;
+        }
+        // SAVE
+        if(io.KeysDown['S'] && io.KeyCtrl)
+        {
+            key_event_save = true;
+        }
 
         //*******************
         //SOURCE CODE WINDOW
@@ -176,20 +189,17 @@ int main(int, char**)
             {
                 if(ImGui::BeginMenu("File"))
                 {        
-                    if(ImGui::MenuItem("New"))
-                    {}
+                    if(ImGui::MenuItem("New", "Ctrl+N"))
+                    {
+                        is_clicked_NEW = true;
+                    }
                     if(ImGui::MenuItem("Open", "Ctrl+O"))
                     {
                         is_clicked_OPEN = true;
                     }
                     if(ImGui::MenuItem("Save", "Ctrl+S"))
                     {
-                        if(strcmp(filename, "") != 0)
-                            save(filename, src_code_buffer, strlen(src_code_buffer));
-                        else
-                        {
-                            bt_Save = true;
-                        }
+                        bt_Save = true;
                     }
                     if(ImGui::MenuItem("Save As..."))
                     {
@@ -201,7 +211,22 @@ int main(int, char**)
                 ImGui::EndMenuBar();
             }
 
-            ImGui::InputTextMultiline("###input_src", src_code_buffer, sizeof(src_code_buffer), ImVec2(420, 630));
+            if(strlen(src_code_buffer) == buffer_size)
+            {
+                buffer_size += alloc_step;
+                src_code_buffer = (char*)realloc(src_code_buffer, buffer_size);
+                if(src_code_buffer == NULL)
+                {
+                    std::cerr << "Realloc failed\n";
+                    exit(1);
+                }
+            }
+            size_t written = strlen(src_code_buffer);
+            ImGui::InputTextMultiline("###input_src", src_code_buffer, buffer_size, ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
+            if(written == strlen(src_code_buffer))
+                unsaved = true;
+            else
+                unsaved = false;
 
             ImGui::End();
         }
@@ -240,27 +265,39 @@ int main(int, char**)
         }
 
         //*******************
+        //NEW BUTTON WINDOW
+        //*******************
+        is_clicked_NEW |= key_event_new;
+        if(is_clicked_NEW)
+        {
+            key_event_new = false;
+        }
+
+        //*******************
         //OPEN BUTTON WINDOW
         //*******************
+        is_clicked_OPEN |= key_event_open;
         if(is_clicked_OPEN)
         {
+            key_event_open = false;
+            static bool write = false;
             static std::string file = ".";
             file = fs::canonical(file).string();
             //file.pop_back(); file.pop_back();
 
             //std::cout << file << std::endl;
-            draw_open(file, is_clicked_OPEN); //  editor_util/editor_util.hpp
-
-            if(!fs::is_directory(file))
+            draw_filebrowser(OPEN, file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
+            if(write && fs::is_regular_file(file))
             {
-                if(fs::file_size(file) > sizeof(src_code_buffer))
+                if(fs::file_size(file) > buffer_size)
                 {
-                    src_code_buffer = (char*)realloc(src_code_buffer, (size_t)fs::file_size(file));
+                    src_code_buffer = (char*)realloc(src_code_buffer, (size_t)fs::file_size(file) + alloc_step);
                     if(src_code_buffer == NULL)
                     {
                         std::cerr << "Realloc failed\n";
                         exit(1);
                     }
+                    buffer_size = (size_t)fs::file_size(file);
                 }
                 strcpy(filename, file.c_str());
                 std::ifstream in_file(filename);
@@ -273,6 +310,9 @@ int main(int, char**)
                     strcat(src_code_buffer, _str.c_str());
                     strcat(src_code_buffer, "\n");
                 }
+
+                file = ".";
+                write = false;
             }
         }     
 
@@ -281,43 +321,80 @@ int main(int, char**)
         //*******************
         static bool save_prompt = false;
         static std::string file = ".";
+        static bool write = false;
+        bt_Save |= key_event_save;
         if(bt_Save)
-        {   
+        {
+            key_event_save = false;
+            // file = ".";
             file = fs::canonical(file);
-            if(bt_Save)
-                draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
-        }
-
-        if(key_event_save)
-        {   
-            file = fs::canonical(file);
-            if(key_event_save)
-                draw_save(file, src_code_buffer, strlen(src_code_buffer), key_event_save); //  editor_util/editor_util.hpp
+            if(!unsaved) //IGNORE SAVE EVENT
+            {}
+            else if(strcmp(filename, "") != 0)
+            {
+               save(filename, src_code_buffer, strlen(src_code_buffer));
+               bt_Save = false;
+               unsaved = false; 
+            }
+            else
+            {
+                draw_filebrowser(SAVE, file, write, bt_Save);
+                    //draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
+                if(write && (!fs::exists(file) || fs::is_regular_file(file)))
+                {
+                    if(!fs::exists(file))
+                    {
+                        strcpy(filename, file.c_str());
+                        if(creat(filename, 0644) == -1)
+                        {
+                            std::cerr << "Failed to create file\n";
+                            exit(1);
+                        }
+                        save(filename, src_code_buffer, strlen(src_code_buffer));
+                        unsaved = false;
+                        write = false;
+                    }
+                    else if(fs::is_empty(file))
+                    {
+                        strcpy(filename, file.c_str());
+                        save(filename, src_code_buffer, strlen(src_code_buffer));
+                        unsaved = false;
+                        write = false;
+                    }
+                    else
+                    {
+                        save_prompt = true;
+                    }  
+                }
+            }
         }
 
         if(save_prompt)
         {
+            ImGui::SetNextWindowSize(ImVec2(200, 90));
             if(ImGui::Begin("###save_prompt", &save_prompt))
             {
-                if(fs::is_empty(file))
-                {
-                    ImGui::Text("Do you want to overwrite?\n\n");
-                    if(ImGui::Button("OK"))
-                    {
-                        save(file.c_str(), src_code_buffer, strlen(src_code_buffer));
-                        save_prompt = false;
-                    }
-                    if(ImGui::Button("Cancel"))
-                    {
-                        save_prompt = false;
-                    }
-                }
-                else
-                {
-                    save(file.c_str(), src_code_buffer, strlen(src_code_buffer));
-                    save_prompt = false;
-                }
                 
+                ImGui::Text("Do you want to overwrite?");
+
+                if(ImGui::Button("OK"))
+                {
+                    save_prompt = false;
+                    bt_Save = false;
+                    strcpy(filename, file.c_str());
+                    save(filename, src_code_buffer, strlen(src_code_buffer));
+                    file = ".";
+                    unsaved = false;
+                    write = false;
+                }
+                ImGui::SameLine();
+                if(ImGui::Button("Cancel"))
+                {
+                    save_prompt = false;
+                    bt_Save = false;
+                    file = ".";
+                    write = false;
+                }
 
                 ImGui::End();
             }
