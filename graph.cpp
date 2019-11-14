@@ -12,6 +12,8 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <stack>
+#include <utility>
 
 namespace GraphGui {
 
@@ -154,22 +156,26 @@ struct GraphGui {
             node->draw(window, node_line_thickness);
     }
 
-    void _calc_depth(Node* node, int depth, std::vector<bool> &visited) 
-    {
-        // #TODO: zameniti rekurziju sa stekom
-        if(visited.at(node->function.id))
-            return;
-        visited.at(node->function.id) = true;
-
-        node->set_depth(depth);
-        for(Node* neighbor: node->neighbors)
-            if(!visited.at(neighbor->function.id))
-                _calc_depth(neighbor, depth+1, visited);
-    }
     void calc_depth(Node* node) 
     { 
         std::vector<bool> visited(size, false);
-        _calc_depth(node, 0, visited);
+
+        std::stack<std::pair<Node*, int> > s;
+        s.push(std::make_pair(node, 0));
+        while(!s.empty())
+        {
+            Node* node = s.top().first;
+            int depth = s.top().second;
+            s.pop();
+
+            if(visited.at(node->function.id))
+                continue;
+            visited.at(node->function.id) = true;
+
+            node->set_depth(depth);
+            for(Node* neighbor: node->neighbors)
+                s.push(std::make_pair(neighbor, depth+1));
+        }
     }
 };
 
