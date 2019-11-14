@@ -59,7 +59,7 @@ struct Node {
     inline void set_depth(int _depth) {depth = _depth;}
     inline void add_edge(Node* node) { neighbors.push_back(node);}
 
-    void draw(ImGuiWindow* window, size_t line_thickness)
+    void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
     {
         ImGui::SetNextWindowPos(position);
         ImGui::SetNextWindowSize(size);
@@ -70,7 +70,6 @@ struct Node {
         start_position.x += NODE_DEFAULT_SIZE.x-5;
         start_position.y += NODE_DEFAULT_SIZE.y/2;
 
-        /* TMP_BEGIN */
         for(unsigned i=0; i<neighbors.size(); i++)
         {
             Node* neighbor = neighbors.at(i);
@@ -78,11 +77,13 @@ struct Node {
             end_position.x += 5;
             end_position.y += NODE_DEFAULT_SIZE.y/2;
 
-            window->DrawList->AddLine(start_position, 
-                                      end_position, 
-                                      IM_COL32(255, 1, 1, 100), line_thickness);
+            window->DrawList->AddBezierCurve(start_position,
+                ImVec2(start_position.x+NODE_DEFAULT_SIZE.x/2, start_position.y),
+                ImVec2(start_position.x, end_position.y),
+                end_position,
+                line_color,
+                line_thickness);
         }
-        /* TMP_END */
         ImGui::End();
     }
 };
@@ -99,6 +100,7 @@ struct GraphGui {
     const int node_distance_x = 175;
     const int node_distance_y = 100;
     const int node_line_thickness = 5;
+    const ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
     
     GraphGui(ImGuiWindow* _window)
     {
@@ -153,7 +155,7 @@ struct GraphGui {
         }
 
         for(Node* node: nodes)
-            node->draw(window, node_line_thickness);
+            node->draw(window, node_line_color, node_line_thickness);
     }
 
     void calc_depth(Node* node) 
