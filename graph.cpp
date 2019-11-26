@@ -46,6 +46,7 @@ struct Node {
     Function function;
     std::vector<Node*> neighbors;
     int depth;
+    bool show;
 
     Node(Function _function)
         : function(_function)
@@ -53,18 +54,37 @@ struct Node {
         position = NODE_DEFAULT_SIZE;
         size = NODE_DEFAULT_SIZE;
         depth = UNSET_DEPTH;
+        show = true;
     }
 
     inline void set_position(ImVec2 _position) {position = _position;}
     inline void set_depth(int _depth) {depth = _depth;}
-    inline void add_edge(Node* node) { neighbors.push_back(node);}
+    inline void add_edge(Node* node) {neighbors.push_back(node);}
+    inline void toggle() {show = !show;}
 
-    void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
+    inline void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
     {
+        if(!show)
+            return; 
+
         ImGui::SetNextWindowPos(position);
         ImGui::SetNextWindowSize(size);
         ImGui::Begin(function.name.c_str());
         ImGuiWindow* w = ImGui::GetCurrentWindow();
+
+        bool is_clicked = ImGui::IsMouseClicked(0);
+        bool is_hovering = ImGui::IsWindowHovered();
+
+        /*
+        std::cout << is_clicked << " " 
+                  << is_hovering << " " 
+                  << show << " " 
+                  << (show && is_clicked && is_hovering)
+                  << std::endl;
+        */
+
+        if(show && is_clicked && is_hovering)
+            show = false;
 
         ImVec2 start_position = w->Pos;
         start_position.x += NODE_DEFAULT_SIZE.x-5;
@@ -73,6 +93,9 @@ struct Node {
         for(unsigned i=0; i<neighbors.size(); i++)
         {
             Node* neighbor = neighbors.at(i);
+            if(!neighbor->show)
+                continue;
+
             ImVec2 end_position = neighbor->position;
             end_position.x += 5;
             end_position.y += NODE_DEFAULT_SIZE.y/2;
@@ -142,7 +165,15 @@ struct GraphGui {
         size = 7;
         layers.resize(size, 0);
 
+        //nodes.at(0)->toggle();
+        //nodes.at(1)->toggle();
+
         calc_depth(n1);
+    }
+
+    inline void set_window(ImGuiWindow* _window) 
+    {
+        window = _window;
     }
 
     void draw()

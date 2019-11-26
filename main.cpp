@@ -49,6 +49,8 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
+//GraphGui::GraphGui graph(nullptr);
+
 int main(int, char**)
 {
     // Setup window
@@ -142,6 +144,7 @@ int main(int, char**)
     const size_t alloc_step = 1 << 8;
     strcpy(src_code_buffer, "");
 
+    GraphGui::GraphGui graph(nullptr);
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -282,26 +285,8 @@ int main(int, char**)
             ImGui::SetNextWindowSize(ImVec2(800, 705));
             ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse);
 
-            /*
-            // PROTOTIP 
-            test::Graph test_graph(123);
-            test::Node* n1 = new test::Node(ImVec2(520, 20), 100, "Node1");
-            test::Node* n2 = new test::Node(ImVec2(530, 20), 101, "Node2");
-            test::Node* n3 = new test::Node(ImVec2(540, 20), 102, "Node3");
-            test::Node* n4 = new test::Node(ImVec2(540, 20), 103, "Node4");
-            n1->add_edge(n2);
-            n2->add_edge(n3);
-            n2->add_edge(n4);
-
-            ImGuiWindow* wwindow = ImGui::GetCurrentWindow();
-            test_graph.nodes.push_back(n1);
-            test_graph.nodes.push_back(n2);
-            test_graph.nodes.push_back(n3);
-            test_graph.nodes.push_back(n4);
-            test_graph.draw(wwindow); 
-            */
-
-            GraphGui::GraphGui graph(ImGui::GetCurrentWindow());
+            
+            graph.set_window(ImGui::GetCurrentWindow());
             graph.draw();
 
             ImGui::End();
