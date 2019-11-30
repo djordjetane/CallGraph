@@ -173,6 +173,8 @@ struct GraphGui {
 
     inline void set_window(ImGuiWindow* _window) 
     {
+        layers.clear();
+        layers.resize(size, 0);
         window = _window;
     }
 
