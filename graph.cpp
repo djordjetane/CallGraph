@@ -45,8 +45,10 @@ struct Node {
     ImVec2 size;
     Function function;
     std::vector<Node*> neighbors;
+
     int depth;
-    bool show;
+    bool shown_neighbours;
+    size_t number_of_active_parents;
 
     Node(Function _function)
         : function(_function)
@@ -54,17 +56,39 @@ struct Node {
         position = NODE_DEFAULT_SIZE;
         size = NODE_DEFAULT_SIZE;
         depth = UNSET_DEPTH;
-        show = true;
+        number_of_active_parents = 0;
+        shown_neighbours = false;
     }
 
     inline void set_position(ImVec2 _position) {position = _position;}
     inline void set_depth(int _depth) {depth = _depth;}
     inline void add_edge(Node* node) {neighbors.push_back(node);}
-    inline void toggle() {show = !show;}
 
-    inline void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
+    void show_neighbours()
     {
-        if(!show)
+        shown_neighbours = true;
+        for(unsigned i=0; i<neighbors.size(); i++)
+        {
+            Node* neighbor = neighbors.at(i);
+            neighbor->number_of_active_parents++;
+        }
+    }
+
+    void hide_neighbours()
+    {
+        shown_neighbours = false;
+        for(unsigned i=0; i<neighbors.size(); i++)
+        {
+            Node* neighbor = neighbors.at(i);
+            neighbor->number_of_active_parents--;
+            if(neighbor->number_of_active_parents == 0 && neighbor->shown_neighbours)
+                neighbor->hide_neighbours();
+        }
+    }
+
+    void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
+    {
+        if(number_of_active_parents == 0)
             return; 
 
         ImGui::SetNextWindowPos(position);
@@ -75,37 +99,37 @@ struct Node {
         bool is_clicked = ImGui::IsMouseClicked(0);
         bool is_hovering = ImGui::IsWindowHovered();
 
-        /*
-        std::cout << is_clicked << " " 
-                  << is_hovering << " " 
-                  << show << " " 
-                  << (show && is_clicked && is_hovering)
-                  << std::endl;
-        */
-
-        if(show && is_clicked && is_hovering)
-            show = false;
-
-        ImVec2 start_position = w->Pos;
-        start_position.x += NODE_DEFAULT_SIZE.x-5;
-        start_position.y += NODE_DEFAULT_SIZE.y/2;
-
-        for(unsigned i=0; i<neighbors.size(); i++)
+        if(number_of_active_parents && is_clicked && is_hovering)
         {
-            Node* neighbor = neighbors.at(i);
-            if(!neighbor->show)
-                continue;
+            if(shown_neighbours)
+                hide_neighbours();
+            else
+                show_neighbours();
+        }
 
-            ImVec2 end_position = neighbor->position;
-            end_position.x += 5;
-            end_position.y += NODE_DEFAULT_SIZE.y/2;
+        if(shown_neighbours)
+        {
+            ImVec2 start_position = w->Pos;
+            start_position.x += NODE_DEFAULT_SIZE.x-5;
+            start_position.y += NODE_DEFAULT_SIZE.y/2;
 
-            window->DrawList->AddBezierCurve(start_position,
-                ImVec2(start_position.x+NODE_DEFAULT_SIZE.x/2, start_position.y),
-                ImVec2(start_position.x, end_position.y),
-                end_position,
-                line_color,
-                line_thickness);
+            for(unsigned i=0; i<neighbors.size(); i++)
+            {
+                Node* neighbor = neighbors.at(i);
+                if(!neighbor->number_of_active_parents)
+                    continue;
+
+                ImVec2 end_position = neighbor->position;
+                end_position.x += 5;
+                end_position.y += NODE_DEFAULT_SIZE.y/2;
+
+                window->DrawList->AddBezierCurve(start_position,
+                    ImVec2(start_position.x+NODE_DEFAULT_SIZE.x/2, start_position.y),
+                    ImVec2(start_position.x, end_position.y),
+                    end_position,
+                    line_color,
+                    line_thickness);
+            }
         }
         ImGui::End();
     }
@@ -164,9 +188,7 @@ struct GraphGui {
 
         size = 7;
         layers.resize(size, 0);
-
-        //nodes.at(0)->toggle();
-        //nodes.at(1)->toggle();
+        nodes.at(0)->number_of_active_parents = 1;
 
         calc_depth(n1);
     }
