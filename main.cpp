@@ -144,7 +144,7 @@ int main(int, char**)
     const size_t alloc_step = 1 << 8;
     strcpy(src_code_buffer, "");
 
-    GraphGui::GraphGui graph(nullptr);
+    GraphGui::GraphGui graph;
     // Main loop
     while (!glfwWindowShouldClose(window))
     {

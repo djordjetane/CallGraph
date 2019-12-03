@@ -19,7 +19,6 @@ namespace GraphGui {
 
 const ImVec2 NODE_DEFAULT_POSITION(100, 100);
 const ImVec2 NODE_DEFAULT_SIZE(100, 50);
-const int UNSET_DEPTH = -1;
 
 struct Function {
     std::string name;
@@ -27,16 +26,12 @@ struct Function {
     // args...
 
     Function(const Function& f)
-    {
-        name = f.name;
-        id = f.id;   
-    }
+        : name(f.name), id(f.id)
+        {}
 
     Function(const std::string &_name, size_t _id)
-    {
-        name = _name;
-        id = _id;
-    }
+        : name(_name), id(_id)
+        {}
 
 };
 
@@ -47,7 +42,7 @@ struct Node {
     std::vector<Node*> neighbors;
 
     int depth;
-    bool shown_neighbours;
+    bool show_children;
     size_t number_of_active_parents;
 
     Node(Function _function)
@@ -55,18 +50,17 @@ struct Node {
     {
         position = NODE_DEFAULT_SIZE;
         size = NODE_DEFAULT_SIZE;
-        depth = UNSET_DEPTH;
         number_of_active_parents = 0;
-        shown_neighbours = false;
+        show_children = false;
     }
 
-    inline void set_position(ImVec2 _position) {position = _position;}
-    inline void set_depth(int _depth) {depth = _depth;}
+    inline void set_position(ImVec2 new_position) {position = new_position;}
+    inline void set_depth(int new_depth) {depth = new_depth;}
     inline void add_edge(Node* node) {neighbors.push_back(node);}
 
     void show_neighbours()
     {
-        shown_neighbours = true;
+        show_children = true;
         for(unsigned i=0; i<neighbors.size(); i++)
         {
             Node* neighbor = neighbors.at(i);
@@ -76,12 +70,12 @@ struct Node {
 
     void hide_neighbours()
     {
-        shown_neighbours = false;
+        show_children = false;
         for(unsigned i=0; i<neighbors.size(); i++)
         {
             Node* neighbor = neighbors.at(i);
             neighbor->number_of_active_parents--;
-            if(neighbor->number_of_active_parents == 0 && neighbor->shown_neighbours)
+            if(neighbor->number_of_active_parents == 0 && neighbor->show_children)
                 neighbor->hide_neighbours();
         }
     }
@@ -94,22 +88,22 @@ struct Node {
         ImGui::SetNextWindowPos(position);
         ImGui::SetNextWindowSize(size);
         ImGui::Begin(function.name.c_str());
-        ImGuiWindow* w = ImGui::GetCurrentWindow();
+        ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
         bool is_clicked = ImGui::IsMouseClicked(0);
         bool is_hovering = ImGui::IsWindowHovered();
 
         if(number_of_active_parents && is_clicked && is_hovering)
         {
-            if(shown_neighbours)
+            if(show_children)
                 hide_neighbours();
             else
                 show_neighbours();
         }
 
-        if(shown_neighbours)
+        if(show_children)
         {
-            ImVec2 start_position = w->Pos;
+            ImVec2 start_position = node_window->Pos;
             start_position.x += NODE_DEFAULT_SIZE.x-5;
             start_position.y += NODE_DEFAULT_SIZE.y/2;
 
@@ -149,10 +143,8 @@ struct GraphGui {
     const int node_line_thickness = 5;
     const ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
     
-    GraphGui(ImGuiWindow* _window)
+    GraphGui()
     {
-        window = _window;
-
         // tmp hard-coded graph:
         Function f1 = Function("A", 0);
         Function f2 = Function("B", 1);
@@ -190,14 +182,14 @@ struct GraphGui {
         layers.resize(size, 0);
         nodes.at(0)->number_of_active_parents = 1;
 
-        calc_depth(n1);
+        calculate_depth(n1);
     }
 
-    inline void set_window(ImGuiWindow* _window) 
+    inline void set_window(ImGuiWindow* new_window) 
     {
         layers.clear();
         layers.resize(size, 0);
-        window = _window;
+        window = new_window;
     }
 
     void draw()
@@ -213,7 +205,7 @@ struct GraphGui {
             node->draw(window, node_line_color, node_line_thickness);
     }
 
-    void calc_depth(Node* node) 
+    void calculate_depth(Node* node) 
     { 
         std::vector<bool> visited(size, false);
 
