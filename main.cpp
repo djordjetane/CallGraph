@@ -51,24 +51,35 @@ static void glfw_error_callback(int error, const char* description)
 
 //GraphGui::GraphGui graph(nullptr);
 
-int main(int, char**)
+struct imgui
 {
+    const char* glsl_version;
+    GLFWwindow* window;
+    bool err;
+};
+
+imgui imgui_create()
+{
+    imgui result;
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
+    if (!glfwInit()) 
+    {
+        exit(EXIT_FAILURE);
+    }
+        
 
     // Decide GL+GLSL versions
 #if __APPLE__
     // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
+    result.glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
+    result.glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
@@ -76,32 +87,34 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "CallGraph", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
+    result.window = glfwCreateWindow(1280, 720, "CallGraph", NULL, NULL);
+    if (result.window == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+    
+    glfwMakeContextCurrent(result.window);
     glfwSwapInterval(1); // Enable vsync
 
     // Initialize OpenGL loader
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-    bool err = gl3wInit() != 0;
+    result.err = gl3wInit() != 0;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-    bool err = glewInit() != GLEW_OK;
+    result.err = glewInit() != GLEW_OK;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-    bool err = gladLoadGL() == 0;
+    result.err = gladLoadGL() == 0;
 #else
-    bool err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
+    result.err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
 #endif
-    if (err)
+    if (result.err)
     {
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -110,9 +123,26 @@ int main(int, char**)
     //ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplGlfw_InitForOpenGL(result.window, true);
+    ImGui_ImplOpenGL3_Init(result.glsl_version);
+    return result;
+}
 
+void imgui_destroy(imgui* to_destroy)
+{
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(to_destroy->window);
+    glfwTerminate();
+}
+
+
+int main(int, char**)
+{
+    imgui gui = imgui_create();
+    ImGuiIO& io = ImGui::GetIO();
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
     // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -146,7 +176,7 @@ int main(int, char**)
 
     GraphGui::GraphGui graph;
     // Main loop
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(gui.window))
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -188,7 +218,7 @@ int main(int, char**)
         // EXIT
         if(io.KeysDown['Q'] && io.KeyCtrl)
         {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
+            glfwSetWindowShouldClose(gui.window, GLFW_TRUE);
         }
 
         //*******************
@@ -222,7 +252,7 @@ int main(int, char**)
                     }
                     if(ImGui::MenuItem("Exit", "Ctrl+Q"))
                     {
-                        glfwSetWindowShouldClose(window, GLFW_TRUE);
+                        glfwSetWindowShouldClose(gui.window, GLFW_TRUE);
                     }
                     ImGui::EndMenu();
                 }
@@ -445,24 +475,18 @@ int main(int, char**)
         // Rendering
         ImGui::Render();
         int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glfwGetFramebufferSize(gui.window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(gui.window);
     }
 
     free(src_code_buffer);
 
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    imgui_destroy(&gui);
 
     return 0;
 }
