@@ -14,6 +14,8 @@
 #include <vector>
 #include <stack>
 #include <utility>
+#include<algorithm>
+#include "function_parser.hpp"
 
 namespace GraphGui {
 
@@ -38,14 +40,14 @@ struct Function {
 struct Node {
     ImVec2 position;
     ImVec2 size;
-    Function function;
+    ParserFunctionInfo* function;
     std::vector<Node*> neighbors;
 
     int depth;
     bool show_children;
     size_t number_of_active_parents;
-
-    Node(Function _function)
+    Node() = default;
+    Node(ParserFunctionInfo* _function)
         : function(_function)
     {
         position = NODE_DEFAULT_SIZE;
@@ -87,7 +89,7 @@ struct Node {
 
         ImGui::SetNextWindowPos(position);
         ImGui::SetNextWindowSize(size);
-        ImGui::Begin(function.name.c_str());
+        ImGui::Begin(function->signature.c_str());
         ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
         bool is_clicked = ImGui::IsMouseClicked(0);
@@ -131,8 +133,7 @@ struct Node {
 
 struct GraphGui {
     ImGuiWindow* window;
-    size_t size;
-    std::vector<Node*> nodes;
+    std::vector<std::unique_ptr<Node>> nodes;
     std::vector<size_t> layers;
 
     // constants
@@ -143,71 +144,70 @@ struct GraphGui {
     const int node_line_thickness = 5;
     const ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
     
-    GraphGui()
+    GraphGui() = default;
+    GraphGui(ParserFunctionCallGraph& call_graph)
     {
-        // tmp hard-coded graph:
-        Function f1 = Function("A", 0);
-        Function f2 = Function("B", 1);
-        Function f3 = Function("C", 2);
-        Function f4 = Function("D", 3);
-        Function f5 = Function("E", 4);
-        Function f6 = Function("F", 5);
-        Function f7 = Function("G", 6);
+        for(const auto& e : call_graph.nodes)
+        {
+            nodes.emplace_back(std::make_unique<Node>());
+            nodes.back()->function = e.get();
+        }
 
-        Node* n1 = new Node(f1);
-        Node* n2 = new Node(f2);
-        Node* n3 = new Node(f3);
-        Node* n4 = new Node(f4);
-        Node* n5 = new Node(f5);
-        Node* n6 = new Node(f6);
-        Node* n7 = new Node(f7);
+        for(const auto[from, to] : call_graph.edges)
+        {
+            auto from_node = std::find_if(nodes.begin(), nodes.end(), [id = from->id](const auto& n) {
+                return n->function->id == id;
+            });
 
-        nodes.push_back(n1);
-        nodes.push_back(n2);
-        nodes.push_back(n3);
-        nodes.push_back(n4);
-        nodes.push_back(n5);
-        nodes.push_back(n6);
-        nodes.push_back(n7);
+            auto to_node = std::find_if(nodes.begin(), nodes.end(), [id = to->id](const auto& n) {
+                return n->function->id == id;
+            });
 
-        n1->add_edge(n2);
-        n2->add_edge(n3);
-        n2->add_edge(n4);
-        n1->add_edge(n5);
-        n1->add_edge(n6);
-        n6->add_edge(n4);
-        n4->add_edge(n7);
+            (*from_node)->add_edge((*to_node).get());
+        }
+        
+        std::cout << "sup" << std::endl;
+        for(const auto& e : nodes)
+        {
+            std::cout << e->function->signature << '\n';
+            for(const auto& n: e->neighbors)
+            {
+                std::cout << '\t' << n->function->signature << '\n';
+            }
+        }
+        std::cout << std::endl;
+    
 
-        size = 7;
-        layers.resize(size, 0);
+        // odavde da krene od main// odavde da krene od main
+        layers.resize(nodes.size(), 0);
         nodes.at(0)->number_of_active_parents = 1;
-
-        calculate_depth(n1);
+        
+        calculate_depth(nodes.front().get());
     }
 
     inline void set_window(ImGuiWindow* new_window) 
     {
         layers.clear();
-        layers.resize(size, 0);
+        layers.resize(nodes.size(), 0);
         window = new_window;
     }
 
     void draw()
     {
-        for(Node* node: nodes)
+        for(auto& node: nodes)
         {
             node->set_position(ImVec2(left_distance + window->Pos.x + node->depth*node_distance_x,
                                       top_distance + window->Pos.y + layers.at(node->depth)*node_distance_y));
             layers.at(node->depth)++;
         }
 
-        for(Node* node: nodes)
+        for(auto& node: nodes)
             node->draw(window, node_line_color, node_line_thickness);
     }
 
     void calculate_depth(Node* node) 
     { 
-        std::vector<bool> visited(size, false);
+        std::vector<bool> visited(nodes.size(), false);
 
         std::stack<std::pair<Node*, int> > s;
         s.push(std::make_pair(node, 0));
@@ -217,9 +217,9 @@ struct GraphGui {
             int depth = s.top().second;
             s.pop();
 
-            if(visited.at(node->function.id))
+            if(visited.at(node->function->id))
                 continue;
-            visited.at(node->function.id) = true;
+            visited.at(node->function->id) = true;
 
             node->set_depth(depth);
             for(Node* neighbor: node->neighbors)

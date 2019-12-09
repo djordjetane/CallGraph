@@ -174,7 +174,8 @@ int main(int, char**)
     const size_t alloc_step = 1 << 8;
     strcpy(src_code_buffer, "");
 
-    GraphGui::GraphGui graph;
+    ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
+    GraphGui::GraphGui graph(call_graph);
     // Main loop
     while (!glfwWindowShouldClose(gui.window))
     {
