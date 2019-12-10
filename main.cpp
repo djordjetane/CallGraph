@@ -138,18 +138,6 @@ void imgui_destroy(imgui* to_destroy)
     glfwTerminate();
 }
 
-struct commands
-{
-	std::vector<std::string> LinuxCommands{
-		"rm *.bc callgraph.dot",
-		"clang++-8 -g -O0 -emit-llvm main1.cpp f1.cpp f2.cpp -c"
-		"llvm-link-8 *.bc -o single.bc"
-		"opt-8 -analyze -std-link-opts -dot-callgraph single.bc"
-		"cat callgraph.dot | c++filt | cat > out.txt"
-		"rm *.bc callgraph.dot"
-	};
-	std::vector<std::string> windows_commands;
-};
 
 struct LinuxCommands
 {
