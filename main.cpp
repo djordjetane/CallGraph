@@ -178,8 +178,47 @@ int RunParserCommand(const LinuxCommands& commands)
 	return result;
 }
 
+const float alloc_step = 1.5;
+struct StringBuffer
+{
+    char* buffer = nullptr;
+    size_t length;
+    size_t buffer_size;
 
+    void update()
+    {
+        length = strlen(buffer);
+        if(length == buffer_size)
+        {
+            buffer_size *= alloc_step;
+            buffer = (char*)realloc(buffer, buffer_size);
+            if(buffer == nullptr)
+            {
+                std::cerr << "Realloc failed" << ": buffer size = " << buffer_size << std::endl;
+                exit(1);
+            }
+        }
+    }
 
+    void clear()
+    {
+        strcpy(buffer, "");
+        length = 0;
+    }
+
+    StringBuffer()
+    {
+        buffer = (char*)malloc(1 << 16);
+        buffer_size = 1 << 16;
+        strcpy(buffer, "");
+        length = 0;
+    }
+
+    ~StringBuffer()
+    {
+        free(buffer);
+    }
+};
 
 int main(int, char**)
 {
@@ -211,13 +250,11 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     static char filename[255];
-    
     strcpy(filename, "");
-    static size_t buffer_size = 1 << 20;
-    static char* src_code_buffer = (char*)malloc(buffer_size);
 
-    const size_t alloc_step = 1 << 8;
-    strcpy(src_code_buffer, "");
+    //static size_t buffer_size = 1 << 20;
+    //static char* src_code_buffer = (char*)malloc(buffer_size);
+    static StringBuffer src_code_buffer;
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
     GraphGui::GraphGui graph(call_graph);
@@ -237,6 +274,8 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        //UPDATING BUFFER INFO
+        src_code_buffer.update();
 
         //*******************
         // KEY EVENTS
@@ -321,17 +360,6 @@ int main(int, char**)
                 
                 ImGui::EndMenuBar();
             }
-        
-            if(strlen(src_code_buffer) == buffer_size)
-            {
-                buffer_size += alloc_step;
-                src_code_buffer = (char*)realloc(src_code_buffer, buffer_size);
-                if(src_code_buffer == NULL)
-                {
-                    std::cerr << "Realloc failed\n";
-                    exit(1);
-                }
-            }
 
             // Writing file name instead of absoulte path
             char* name = NULL;
@@ -345,10 +373,11 @@ int main(int, char**)
             ImGui::SameLine();
             ImGui::Text("%s", (unsaved ? "*" : ""));
 
-            size_t written = strlen(src_code_buffer); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
+            size_t written = src_code_buffer.length; // IF BUFFER HAS CHANGED VIA TEXT EDITOR
 
-            ImGui::InputTextMultiline("###input_src", src_code_buffer, buffer_size, ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
-            if(written != strlen(src_code_buffer))
+            ImGui::InputTextMultiline("###input_src", src_code_buffer.buffer, src_code_buffer.buffer_size
+                                        , ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
+            if(written != src_code_buffer.length)
                 unsaved = true;
 
             ImGui::End();
@@ -408,26 +437,23 @@ int main(int, char**)
             draw_filebrowser(OPEN, file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
             if(write && fs::is_regular_file(file))
             {
-                if(fs::file_size(file) > buffer_size)
+                if(fs::file_size(file) > src_code_buffer.buffer_size)
                 {
-                    src_code_buffer = (char*)realloc(src_code_buffer, (size_t)fs::file_size(file) + alloc_step);
-                    if(src_code_buffer == NULL)
-                    {
-                        std::cerr << "Realloc failed\n";
-                        exit(1);
-                    }
-                    buffer_size = (size_t)fs::file_size(file);
+                    src_code_buffer.length = fs::file_size(file);
+                    src_code_buffer.buffer_size = src_code_buffer.length;
+                    src_code_buffer.update();
                 }
                 strcpy(filename, file.c_str());
                 std::ifstream in_file(filename);
                 std::string _str;
-                
-                strcpy(src_code_buffer, "");
+
+                src_code_buffer.clear();
 
                 while(std::getline(in_file, _str))
                 {
-                    strcat(src_code_buffer, _str.c_str());
-                    strcat(src_code_buffer, "\n");
+                    src_code_buffer.update();
+                    strcat(src_code_buffer.buffer, _str.c_str());
+                    strcat(src_code_buffer.buffer, "\n");
                 }
                 
 				commands.SetFileToAnalyze(filename);
@@ -456,14 +482,14 @@ int main(int, char**)
             {}
             else if(strcmp(filename, "") != 0)
             {
-               save(filename, src_code_buffer, strlen(src_code_buffer));
+               save(filename, src_code_buffer.buffer, src_code_buffer.length);
                bt_Save = false;
                unsaved = false; 
             }
             else
             {
                 draw_filebrowser(SAVE, file, write, bt_Save);
-                    //draw_save(file, src_code_buffer, strlen(src_code_buffer), bt_Save); //  editor_util/editor_util.hpp
+                    //draw_save(file, src_code_buffer, src_code_buffer.length, bt_Save); //  editor_util/editor_util.hpp
                 if(write && (!fs::exists(file) || fs::is_regular_file(file)))
                 {
                     if(!fs::exists(file))
@@ -474,14 +500,14 @@ int main(int, char**)
                             std::cerr << "Failed to create file\n";
                             exit(1);
                         }
-                        save(filename, src_code_buffer, strlen(src_code_buffer));
+                        save(filename, src_code_buffer.buffer, src_code_buffer.length);
                         unsaved = false;
                         write = false;
                     }
                     else if(fs::is_empty(file))
                     {
                         strcpy(filename, file.c_str());
-                        save(filename, src_code_buffer, strlen(src_code_buffer));
+                        save(filename, src_code_buffer.buffer, src_code_buffer.length);
                         unsaved = false;
                         write = false;
                     }
@@ -506,7 +532,7 @@ int main(int, char**)
                     save_prompt = false;
                     bt_Save = false;
                     strcpy(filename, file.c_str());
-                    save(filename, src_code_buffer, strlen(src_code_buffer));
+                    save(filename, src_code_buffer.buffer, src_code_buffer.length);
                     file = ".";
                     unsaved = false;
                     write = false;
@@ -535,8 +561,6 @@ int main(int, char**)
 
         glfwSwapBuffers(gui.window);
     }
-
-    free(src_code_buffer);
 
     imgui_destroy(&gui);
 

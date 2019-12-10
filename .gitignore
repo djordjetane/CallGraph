@@ -2,3 +2,4 @@
 *.txt
 *test*
 .vscode
+.ccls-cache
