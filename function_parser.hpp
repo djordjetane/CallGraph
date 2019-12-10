@@ -13,6 +13,7 @@ struct ParserFunctionInfo
 
     ParserFunctionInfo() = default;
     ParserFunctionInfo(IdType id, SignatureInfoType signature) : id(id), signature(std::move(signature)) {}
+
 };
 
 struct ParserFunctionCallGraph

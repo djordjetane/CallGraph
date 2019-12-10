@@ -137,15 +137,23 @@ struct GraphGui {
     std::vector<size_t> layers;
 
     // constants
-    const int top_distance = 40;
-    const int left_distance = 25;
-    const int node_distance_x = 175;
-    const int node_distance_y = 100;
-    const int node_line_thickness = 5;
-    const ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
+    int top_distance = 40;
+    int left_distance = 25;
+    int node_distance_x = 175;
+    int node_distance_y = 100;
+    int node_line_thickness = 5;
+    ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
     
     GraphGui() = default;
-    GraphGui(ParserFunctionCallGraph& call_graph)
+	GraphGui(const GraphGui&) = default;
+	GraphGui(GraphGui&&) = default;
+	
+	GraphGui& operator=(GraphGui&&) = default;
+	GraphGui& operator=(const GraphGui&) = default;
+	
+	~GraphGui() = default;
+	
+    explicit GraphGui(ParserFunctionCallGraph& call_graph)
     {
         for(const auto& e : call_graph.nodes)
         {
@@ -176,7 +184,7 @@ struct GraphGui {
             }
         }
         std::cout << std::endl;
-    
+
 
         // odavde da krene od main// odavde da krene od main
         layers.resize(nodes.size(), 0);

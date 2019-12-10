@@ -138,6 +138,60 @@ void imgui_destroy(imgui* to_destroy)
     glfwTerminate();
 }
 
+struct commands
+{
+	std::vector<std::string> LinuxCommands{
+		"rm *.bc callgraph.dot",
+		"clang++-8 -g -O0 -emit-llvm main1.cpp f1.cpp f2.cpp -c"
+		"llvm-link-8 *.bc -o single.bc"
+		"opt-8 -analyze -std-link-opts -dot-callgraph single.bc"
+		"cat callgraph.dot | c++filt | cat > out.txt"
+		"rm *.bc callgraph.dot"
+	};
+	std::vector<std::string> windows_commands;
+};
+
+struct LinuxCommands
+{
+	const std::string compile_template{"clang++-8 -g -O0 -emit-llvm {} -c -std=c++17"};
+	std::string cleanup{"rm *.bc callgraph.dot"};
+	std::string compile;
+	std::string link{"llvm-link-8 *.bc -o single.bc"};
+	std::string analyze{"opt-8 -analyze -std-link-opts -dot-callgraph single.bc"};
+	std::string demangle{"cat callgraph.dot | c++filt | cat > out.txt"};
+	
+	void SetFileToAnalyze(const std::string& filename)
+	{
+		compile = compile_template;
+		compile.replace(compile.find("{}"), 2, filename);
+		std::cout << compile << '\n';
+	}
+	
+	int RunCommands()
+	{
+		system(cleanup.c_str());
+		system(compile.c_str());
+		system(link.c_str());
+		system(analyze.c_str());
+		system(demangle.c_str());
+		system(cleanup.c_str());
+		return 0;
+	}
+};
+
+
+
+
+
+int RunParserCommand(const LinuxCommands& commands)
+{
+	int result = 0;
+
+	return result;
+}
+
+
+
 
 int main(int, char**)
 {
@@ -167,16 +221,20 @@ int main(int, char**)
     static bool key_event_save = false;
     static bool unsaved = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
     static char filename[255];
+    
     strcpy(filename, "");
     static size_t buffer_size = 1 << 20;
     static char* src_code_buffer = (char*)malloc(buffer_size);
+
     const size_t alloc_step = 1 << 8;
     strcpy(src_code_buffer, "");
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
     GraphGui::GraphGui graph(call_graph);
     // Main loop
+	LinuxCommands commands;
     while (!glfwWindowShouldClose(gui.window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -275,7 +333,7 @@ int main(int, char**)
                 
                 ImGui::EndMenuBar();
             }
-
+        
             if(strlen(src_code_buffer) == buffer_size)
             {
                 buffer_size += alloc_step;
@@ -295,12 +353,12 @@ int main(int, char**)
             else
                 name++;
             
-
             ImGui::Text("%s", name);
             ImGui::SameLine();
             ImGui::Text("%s", (unsaved ? "*" : ""));
 
             size_t written = strlen(src_code_buffer); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
+
             ImGui::InputTextMultiline("###input_src", src_code_buffer, buffer_size, ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
             if(written != strlen(src_code_buffer))
                 unsaved = true;
@@ -375,7 +433,7 @@ int main(int, char**)
                 strcpy(filename, file.c_str());
                 std::ifstream in_file(filename);
                 std::string _str;
-
+                
                 strcpy(src_code_buffer, "");
 
                 while(std::getline(in_file, _str))
@@ -383,7 +441,12 @@ int main(int, char**)
                     strcat(src_code_buffer, _str.c_str());
                     strcat(src_code_buffer, "\n");
                 }
-
+                
+				commands.SetFileToAnalyze(filename);
+				commands.RunCommands();
+				call_graph = ExtractCallGraphFromFile("out.txt");
+				graph = GraphGui::GraphGui(call_graph);
+				
                 file = ".";
                 write = false;
             }
