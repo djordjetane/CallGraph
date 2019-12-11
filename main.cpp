@@ -5,6 +5,7 @@
 #include "imgui_util/imgui.h"
 #include "imgui_util/glfw_opengl3/imgui_impl_glfw.h"
 #include "imgui_util/glfw_opengl3/imgui_impl_opengl3.h"
+#include "imgui_util/misc/cpp/imgui_stdlib.cpp"
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -169,8 +170,6 @@ struct LinuxCommands
 
 
 
-
-
 int RunParserCommand(const LinuxCommands& commands)
 {
 	int result = 0;
@@ -178,66 +177,11 @@ int RunParserCommand(const LinuxCommands& commands)
 	return result;
 }
 
-const float alloc_step = 1.5;
-struct StringBuffer
-{
-    char* buffer = nullptr;
-    size_t length;
-    size_t buffer_size;
-
-    void update()
-    {
-        length = strlen(buffer);
-        if(length == buffer_size)
-        {
-            buffer_size *= alloc_step;
-            buffer = (char*)realloc(buffer, buffer_size);
-            if(buffer == nullptr)
-            {
-                std::cerr << "Realloc failed" << ": buffer size = " << buffer_size << std::endl;
-                exit(1);
-            }
-        }
-    }
-
-    void clear()
-    {
-        strcpy(buffer, "");
-        length = 0;
-    }
-
-    StringBuffer()
-    {
-        buffer = (char*)malloc(1 << 16);
-        buffer_size = 1 << 16;
-        strcpy(buffer, "");
-        length = 0;
-    }
-
-    ~StringBuffer()
-    {
-        free(buffer);
-    }
-};
-
 int main(int, char**)
 {
     imgui gui = imgui_create();
     ImGuiIO& io = ImGui::GetIO();
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'misc/fonts/README.txt' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != NULL);
+    io.Fonts->AddFontFromFileTTF("imgui_util/misc/fonts/Cousine-Regular.ttf", 15.0f);
 
     // Our state
     static bool is_clicked_NEW = false;
@@ -252,9 +196,7 @@ int main(int, char**)
     static char filename[255];
     strcpy(filename, "");
 
-    //static size_t buffer_size = 1 << 20;
-    //static char* src_code_buffer = (char*)malloc(buffer_size);
-    static StringBuffer src_code_buffer;
+    static std::string buffer;
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
     GraphGui::GraphGui graph(call_graph);
@@ -273,9 +215,6 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        //UPDATING BUFFER INFO
-        src_code_buffer.update();
 
         //*******************
         // KEY EVENTS
@@ -373,11 +312,11 @@ int main(int, char**)
             ImGui::SameLine();
             ImGui::Text("%s", (unsaved ? "*" : ""));
 
-            size_t written = src_code_buffer.length; // IF BUFFER HAS CHANGED VIA TEXT EDITOR
+            size_t written = buffer.length(); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
 
-            ImGui::InputTextMultiline("###input_src", src_code_buffer.buffer, src_code_buffer.buffer_size
-                                        , ImVec2(420, 630), ImGuiInputTextFlags_AllowTabInput);
-            if(written != src_code_buffer.length)
+            ImGui::InputTextMultiline("###input_src", &buffer, ImVec2(420, 630)
+                                    , ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_Multiline);
+            if(written != buffer.length())
                 unsaved = true;
 
             ImGui::End();
@@ -437,23 +376,16 @@ int main(int, char**)
             draw_filebrowser(OPEN, file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
             if(write && fs::is_regular_file(file))
             {
-                if(fs::file_size(file) > src_code_buffer.buffer_size)
-                {
-                    src_code_buffer.length = fs::file_size(file);
-                    src_code_buffer.buffer_size = src_code_buffer.length;
-                    src_code_buffer.update();
-                }
                 strcpy(filename, file.c_str());
                 std::ifstream in_file(filename);
                 std::string _str;
 
-                src_code_buffer.clear();
+                buffer.clear();
 
                 while(std::getline(in_file, _str))
                 {
-                    src_code_buffer.update();
-                    strcat(src_code_buffer.buffer, _str.c_str());
-                    strcat(src_code_buffer.buffer, "\n");
+                    buffer.append(_str);
+                    buffer.append("\n");
                 }
                 
 				commands.SetFileToAnalyze(filename);
@@ -482,7 +414,7 @@ int main(int, char**)
             {}
             else if(strcmp(filename, "") != 0)
             {
-               save(filename, src_code_buffer.buffer, src_code_buffer.length);
+               save(filename, buffer);
                bt_Save = false;
                unsaved = false; 
             }
@@ -500,14 +432,14 @@ int main(int, char**)
                             std::cerr << "Failed to create file\n";
                             exit(1);
                         }
-                        save(filename, src_code_buffer.buffer, src_code_buffer.length);
+                        save(filename, buffer);
                         unsaved = false;
                         write = false;
                     }
                     else if(fs::is_empty(file))
                     {
                         strcpy(filename, file.c_str());
-                        save(filename, src_code_buffer.buffer, src_code_buffer.length);
+                        save(filename, buffer);
                         unsaved = false;
                         write = false;
                     }
@@ -532,7 +464,7 @@ int main(int, char**)
                     save_prompt = false;
                     bt_Save = false;
                     strcpy(filename, file.c_str());
-                    save(filename, src_code_buffer.buffer, src_code_buffer.length);
+                    save(filename, buffer);
                     file = ".";
                     unsaved = false;
                     write = false;

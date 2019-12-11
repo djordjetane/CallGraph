@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-void save(const char* new_filename, const char* buffer, const int buffer_size)
+void save(const char* new_filename, const std::string& buffer)
 {
     std::ofstream outfile(new_filename, std::fstream::out);
     if(!outfile.is_open())
@@ -19,7 +19,7 @@ void save(const char* new_filename, const char* buffer, const int buffer_size)
         std::cerr << "Failed to open file\n";
         exit(1);
     }
-    outfile.write(buffer, buffer_size);
+    outfile << buffer;
 
     outfile.close();   
 }
