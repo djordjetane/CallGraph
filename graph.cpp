@@ -14,7 +14,7 @@
 #include <vector>
 #include <stack>
 #include <utility>
-#include<algorithm>
+#include <algorithm>
 #include "function_parser.hpp"
 
 namespace GraphGui {
@@ -46,14 +46,20 @@ struct Node {
     int depth;
     bool show_children;
     size_t number_of_active_parents;
-    Node() = default;
-    Node(ParserFunctionInfo* _function)
-        : function(_function)
+
+    void init()
     {
         position = NODE_DEFAULT_SIZE;
         size = NODE_DEFAULT_SIZE;
         number_of_active_parents = 0;
         show_children = false;
+    }
+
+    Node() = default;
+    Node(ParserFunctionInfo* _function)
+        : function(_function)
+    {
+        init();
     }
 
     inline void set_position(ImVec2 new_position) {position = new_position;}
@@ -161,6 +167,9 @@ struct GraphGui {
         {
             nodes.emplace_back(std::make_unique<Node>());
             nodes.back()->function = e.get();
+            // popraviti deo sa Node() = default ~ treba da poziva init();
+            // dole je privremeno resenje
+            nodes.back()->init();
         }
 
         for(const auto[from, to] : call_graph.edges)
