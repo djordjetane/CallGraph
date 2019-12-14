@@ -128,7 +128,8 @@ struct Node {
             }
         }
         ImGui::End();
-        ImGui::SetWindowFocus(function->signature.c_str());
+        if(ImGui::IsWindowFocused())
+            ImGui::SetWindowFocus(function->signature.c_str());
     }
 };
 
