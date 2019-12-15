@@ -15,9 +15,18 @@
 #include <stack>
 #include <utility>
 #include <algorithm>
+#include <queue>
 #include "function_parser.hpp"
 
 namespace GraphGui {
+
+// scroll values
+static float scroll_x = 0;
+static float scroll_y = 0;
+const static float SCROLL_SPEED = 10;
+
+// focus value
+static bool refresh_nodes = false;
 
 const ImVec2 NODE_DEFAULT_POSITION(100, 100);
 const ImVec2 NODE_DEFAULT_SIZE(100, 50);
@@ -93,7 +102,9 @@ struct Node {
         if(number_of_active_parents == 0)
             return; 
 
-        ImGui::SetNextWindowPos(position);
+        ImVec2 real_position = ImVec2(position.x - scroll_x, position.y - scroll_y);
+
+        ImGui::SetNextWindowPos(real_position);
         ImGui::SetNextWindowSize(size);
         ImGui::Begin(function->signature.c_str());
         ImGuiWindow* node_window = ImGui::GetCurrentWindow();
@@ -121,7 +132,8 @@ struct Node {
                 if(!neighbor->number_of_active_parents)
                     continue;
 
-                ImVec2 end_position = neighbor->position;
+                ImVec2 end_position = ImVec2(neighbor->position.x - scroll_x, 
+                                             neighbor->position.y - scroll_y);
                 end_position.x += 5;
                 end_position.y += NODE_DEFAULT_SIZE.y/2;
 
@@ -135,7 +147,7 @@ struct Node {
         }
         ImGui::End();
         if(ImGui::IsWindowFocused())
-            ImGui::SetWindowFocus(function->signature.c_str());
+            refresh_nodes = true;
     }
 };
 
@@ -163,6 +175,8 @@ struct GraphGui {
 	
     explicit GraphGui(ParserFunctionCallGraph& call_graph)
     {
+        int index = 0;
+        int main_function_index = 0;
         for(const auto& e : call_graph.nodes)
         {
             nodes.emplace_back(std::make_unique<Node>());
@@ -170,7 +184,14 @@ struct GraphGui {
             // popraviti deo sa Node() = default ~ treba da poziva init();
             // dole je privremeno resenje
             nodes.back()->init();
+
+            if(nodes.back()->function->signature == "main")
+                main_function_index = index;
+            index++;
         }
+
+        // postavljamo da main ima nulti indeks
+        swap(nodes.at(0), nodes.at(main_function_index));
 
         for(const auto[from, to] : call_graph.edges)
         {
@@ -196,8 +217,6 @@ struct GraphGui {
         }
         std::cout << std::endl;
 
-
-        // odavde da krene od main// odavde da krene od main
         layers.resize(nodes.size(), 0);
         nodes.at(0)->number_of_active_parents = 1;
         
@@ -213,6 +232,8 @@ struct GraphGui {
 
     void draw()
     {
+        key_input_check();
+
         for(auto& node: nodes)
         {
             node->set_position(ImVec2(left_distance + window->Pos.x + node->depth*node_distance_x,
@@ -222,18 +243,22 @@ struct GraphGui {
 
         for(auto& node: nodes)
             node->draw(window, node_line_color, node_line_thickness);
+
+        if(refresh_nodes)
+            refresh();
+
     }
 
     void calculate_depth(Node* node) 
     { 
         std::vector<bool> visited(nodes.size(), false);
 
-        std::stack<std::pair<Node*, int> > s;
+        std::queue<std::pair<Node*, int> > s;
         s.push(std::make_pair(node, 0));
         while(!s.empty())
         {
-            Node* node = s.top().first;
-            int depth = s.top().second;
+            Node* node = s.front().first;
+            int depth = s.front().second;
             s.pop();
 
             if(visited.at(node->function->id))
@@ -243,6 +268,33 @@ struct GraphGui {
             node->set_depth(depth);
             for(Node* neighbor: node->neighbors)
                 s.push(std::make_pair(neighbor, depth+1));
+        }
+    }
+
+    void refresh()
+    {
+        for(auto& node: nodes)
+            ImGui::SetWindowFocus(node->function->signature.c_str());
+        refresh_nodes = false;
+    }
+
+    void key_input_check()
+    {
+        if(ImGui::IsKeyPressed('W'))
+        {
+            scroll_y += SCROLL_SPEED;
+        }
+        if(ImGui::IsKeyPressed('S'))
+        {
+            scroll_y -= SCROLL_SPEED;
+        }
+        if(ImGui::IsKeyPressed('A'))
+        {
+            scroll_x += SCROLL_SPEED;
+        }
+        if(ImGui::IsKeyPressed('D'))
+        {
+            scroll_x -= SCROLL_SPEED;
         }
     }
 };

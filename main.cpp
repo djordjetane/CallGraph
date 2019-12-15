@@ -247,11 +247,27 @@ int main(int, char**)
         }
 
         //*******************
+        //GENERATED GRAPH WINDOW
+        //*******************
+        {
+            ImGui::SetNextWindowPos(ImVec2(470, 10));
+            ImGui::SetNextWindowSize(ImVec2(800, 705));
+            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse);
+
+            
+            graph.set_window(ImGui::GetCurrentWindow());
+            graph.draw();
+
+            ImGui::End();
+        }
+
+        //*******************
         //SOURCE CODE WINDOW
         //*******************
         {   
             ImGui::SetNextWindowPos(ImVec2(15, 10));
             ImGui::SetNextWindowSize(ImVec2(450, 705));
+            ImGui::SetNextWindowFocus();
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
             
             if(ImGui::BeginMenuBar())
@@ -318,21 +334,6 @@ int main(int, char**)
                                     , ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_Multiline);
             if(written != buffer.length())
                 unsaved = true;
-
-            ImGui::End();
-        }
-
-        //*******************
-        //GENERATED GRAPH WINDOW
-        //*******************
-        {
-            ImGui::SetNextWindowPos(ImVec2(470, 10));
-            ImGui::SetNextWindowSize(ImVec2(800, 705));
-            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse);
-
-            
-            graph.set_window(ImGui::GetCurrentWindow());
-            graph.draw();
 
             ImGui::End();
         }
