@@ -20,16 +20,17 @@
 
 namespace GraphGui {
 
-// scroll values
+// scroll values and constants
 static float scroll_x = 0;
 static float scroll_y = 0;
-const static float SCROLL_SPEED = 10;
+const static float ZOOM_SPEED = 10;
+const static float NODE_MIN_SIZE_Y = 30;
+const static float NODE_MIN_SIZE_X = 2*NODE_MIN_SIZE_Y;
 
 // focus value
 static bool refresh_nodes = false;
 
-const ImVec2 NODE_DEFAULT_POSITION(100, 100);
-const ImVec2 NODE_DEFAULT_SIZE(100, 50);
+static ImVec2 current_node_size(100, 50);
 
 struct Function {
     std::string name;
@@ -58,8 +59,8 @@ struct Node {
 
     void init()
     {
-        position = NODE_DEFAULT_SIZE;
-        size = NODE_DEFAULT_SIZE;
+        position = current_node_size;
+        size = current_node_size;
         number_of_active_parents = 0;
         show_children = false;
     }
@@ -73,6 +74,8 @@ struct Node {
 
     inline void set_position(ImVec2 new_position) {position = new_position;}
     inline void set_depth(int new_depth) {depth = new_depth;}
+    inline void set_size(ImVec2 new_size) {size = new_size;}
+
     inline void add_edge(Node* node) {neighbors.push_back(node);}
 
     void show_neighbours()
@@ -123,8 +126,8 @@ struct Node {
         if(show_children)
         {
             ImVec2 start_position = node_window->Pos;
-            start_position.x += NODE_DEFAULT_SIZE.x-5;
-            start_position.y += NODE_DEFAULT_SIZE.y/2;
+            start_position.x += current_node_size.x-5;
+            start_position.y += current_node_size.y/2;
 
             for(unsigned i=0; i<neighbors.size(); i++)
             {
@@ -135,10 +138,10 @@ struct Node {
                 ImVec2 end_position = ImVec2(neighbor->position.x - scroll_x, 
                                              neighbor->position.y - scroll_y);
                 end_position.x += 5;
-                end_position.y += NODE_DEFAULT_SIZE.y/2;
+                end_position.y += current_node_size.y/2;
 
                 window->DrawList->AddBezierCurve(start_position,
-                    ImVec2(start_position.x+NODE_DEFAULT_SIZE.x/2, start_position.y),
+                    ImVec2(start_position.x+current_node_size.x/2, start_position.y),
                     ImVec2(start_position.x, end_position.y),
                     end_position,
                     line_color,
@@ -155,6 +158,7 @@ struct GraphGui {
     ImGuiWindow* window;
     std::vector<std::unique_ptr<Node>> nodes;
     std::vector<size_t> layers;
+    ImGuiIO* io_pointer;
 
     // constants
     int top_distance = 40;
@@ -173,8 +177,10 @@ struct GraphGui {
 	
 	~GraphGui() = default;
 	
-    explicit GraphGui(ParserFunctionCallGraph& call_graph)
+    explicit GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io)
     {
+        io_pointer = &io;
+
         int index = 0;
         int main_function_index = 0;
         for(const auto& e : call_graph.nodes)
@@ -282,20 +288,29 @@ struct GraphGui {
     {
         if(ImGui::IsKeyPressed('W'))
         {
-            scroll_y += SCROLL_SPEED;
+            scroll_y += ZOOM_SPEED;
         }
         if(ImGui::IsKeyPressed('S'))
         {
-            scroll_y -= SCROLL_SPEED;
+            scroll_y -= ZOOM_SPEED;
         }
         if(ImGui::IsKeyPressed('A'))
         {
-            scroll_x += SCROLL_SPEED;
+            scroll_x += ZOOM_SPEED;
         }
         if(ImGui::IsKeyPressed('D'))
         {
-            scroll_x -= SCROLL_SPEED;
+            scroll_x -= ZOOM_SPEED;
         }
+
+        current_node_size.x += 3*io_pointer->MouseWheel;
+        current_node_size.y += 3*io_pointer->MouseWheel;
+        current_node_size.x = std::max(NODE_MIN_SIZE_X, current_node_size.x);
+        current_node_size.y = std::max(NODE_MIN_SIZE_Y, current_node_size.y);
+        node_distance_x = 1.5*current_node_size.x;
+        node_distance_y = 1.5*current_node_size.y;
+        for(auto& node: nodes)
+            node->set_size(current_node_size);
     }
 };
 

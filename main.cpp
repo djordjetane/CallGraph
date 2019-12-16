@@ -199,7 +199,7 @@ int main(int, char**)
     static std::string buffer;
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
-    GraphGui::GraphGui graph(call_graph);
+    GraphGui::GraphGui graph(call_graph, io);
     // Main loop
 	LinuxCommands commands;
     while (!glfwWindowShouldClose(gui.window))
@@ -267,7 +267,7 @@ int main(int, char**)
         {   
             ImGui::SetNextWindowPos(ImVec2(15, 10));
             ImGui::SetNextWindowSize(ImVec2(450, 705));
-            ImGui::SetNextWindowFocus();
+            //ImGui::SetNextWindowFocus();
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
             
             if(ImGui::BeginMenuBar())
@@ -392,12 +392,12 @@ int main(int, char**)
 				commands.SetFileToAnalyze(filename);
 				commands.RunCommands();
 				call_graph = ExtractCallGraphFromFile("out.txt");
-				graph = GraphGui::GraphGui(call_graph);
+				graph = GraphGui::GraphGui(call_graph, io);
 				
                 file = ".";
                 write = false;
             }
-        }     
+        }    
 
         //*******************
         //SAVE BUTTON WINDOW
