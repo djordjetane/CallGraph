@@ -330,11 +330,26 @@ int main(int, char**)
 
             size_t written = buffer.length(); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
 
-            ImGui::InputTextMultiline("###input_src", &buffer, ImVec2(420, 630)
+            ImGui::BeginChild("###line_numbers", ImVec2(430,615), ImGuiWindowFlags_NoCollapse);
+                
+            int number_of_lines = 0;
+            number_of_lines = std::count(buffer.cbegin(), buffer.cend(), '\n');
+
+            std::string line_nums;
+            for(int i = 1; i <= number_of_lines+1; i++)
+            {
+                line_nums.append(std::to_string(i));
+                line_nums.append("\n");
+            }
+            ImGui::TextUnformatted(line_nums.c_str());
+            
+            ImGui::SameLine();
+            ImGui::InputTextMultiline("###input_src", &buffer, ImVec2(410, 590)
                                     , ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_Multiline);
             if(written != buffer.length())
                 unsaved = true;
 
+            ImGui::EndChild();
             ImGui::End();
         }
 

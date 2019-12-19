@@ -3,3 +3,5 @@
 *test*
 .vscode
 .ccls-cache
+CallGraph
+SourceExplorer

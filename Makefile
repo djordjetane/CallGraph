@@ -14,7 +14,7 @@
 CXX = g++-8 -std=c++17
 #CXX = clang++
 
-EXE = CallGraph
+EXE = SourceExplorer
 SOURCES = main.cpp editor_util/editor_util.cpp graph.cpp
 SOURCES += imgui_util/glfw_opengl3/imgui_impl_glfw.cpp imgui_util/glfw_opengl3/imgui_impl_opengl3.cpp
 SOURCES += imgui_util/imgui.cpp imgui_util/imgui_demo.cpp imgui_util/imgui_draw.cpp imgui_util/imgui_widgets.cpp function_parser.cpp
