@@ -5,3 +5,4 @@
 .ccls-cache
 CallGraph
 SourceExplorer
+*.wiki*
