@@ -16,7 +16,7 @@
 #include <utility>
 #include <algorithm>
 #include <queue>
-#include "function_parser.hpp"
+#include "function_parser.hpp" 
 
 namespace GraphGui {
 
@@ -100,6 +100,11 @@ struct Node {
         }
     }
 
+    void show_info()
+    {
+        ImGui::Text(function->signature.c_str());
+    }
+
     void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
     {
         if(number_of_active_parents == 0)
@@ -109,7 +114,9 @@ struct Node {
 
         ImGui::SetNextWindowPos(real_position);
         ImGui::SetNextWindowSize(size);
-        ImGui::Begin(function->signature.c_str());
+        ImGui::BeginChild(function->signature.c_str(), size, true);
+        show_info();
+
         ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
         bool is_clicked = ImGui::IsMouseClicked(0);
@@ -312,8 +319,8 @@ struct GraphGui {
             scroll_x -= ZOOM_SPEED;
         }
 
-        current_node_size.x += 3*io_pointer->MouseWheel;
-        current_node_size.y += 3*io_pointer->MouseWheel;
+        current_node_size.x *= (100.0f - 3*io_pointer->MouseWheel)/100;
+        current_node_size.y *= (100.0f - 3*io_pointer->MouseWheel)/100;
         current_node_size.x = std::max(NODE_MIN_SIZE_X, current_node_size.x);
         current_node_size.y = std::max(NODE_MIN_SIZE_Y, current_node_size.y);
         node_distance_x = 1.5*current_node_size.x;

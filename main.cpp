@@ -216,6 +216,9 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+            ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
+
+
         //*******************
         // KEY EVENTS
         //*******************
@@ -256,9 +259,11 @@ int main(int, char**)
 
             
             graph.set_window(ImGui::GetCurrentWindow());
+            //PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
             graph.draw();
 
             ImGui::End();
+            ImGui::PopClipRect();
         }
 
         //*******************
