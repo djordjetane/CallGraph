@@ -12,4 +12,4 @@ Still in development...
 - [Đorđe Tanasković](https://github.com/djordjetane)
 
 ## current state:
-![](test.gif)
+![](state.gif)
