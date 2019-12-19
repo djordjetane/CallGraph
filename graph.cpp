@@ -295,19 +295,19 @@ struct GraphGui {
            screen_position.y > (window->Pos.y + window->Size.y))
            return;
 
-        if(ImGui::IsKeyPressed('W'))
+        if(ImGui::IsKeyPressed('W') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
         {
             scroll_y += ZOOM_SPEED;
         }
-        if(ImGui::IsKeyPressed('S'))
+        if(ImGui::IsKeyPressed('S') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
         {
             scroll_y -= ZOOM_SPEED;
         }
-        if(ImGui::IsKeyPressed('A'))
+        if(ImGui::IsKeyPressed('A') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
         {
             scroll_x += ZOOM_SPEED;
         }
-        if(ImGui::IsKeyPressed('D'))
+        if(ImGui::IsKeyPressed('D') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
         {
             scroll_x -= ZOOM_SPEED;
         }
