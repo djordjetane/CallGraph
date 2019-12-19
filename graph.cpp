@@ -286,6 +286,15 @@ struct GraphGui {
 
     void key_input_check()
     {
+        ImVec2 screen_position = io_pointer->MousePos;
+
+        if(screen_position.x < window->Pos.x || 
+           screen_position.y < window->Pos.y)
+            return;
+        if(screen_position.x > (window->Pos.x + window->Size.x) ||
+           screen_position.y > (window->Pos.y + window->Size.y))
+           return;
+
         if(ImGui::IsKeyPressed('W'))
         {
             scroll_y += ZOOM_SPEED;

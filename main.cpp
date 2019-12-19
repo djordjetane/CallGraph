@@ -252,7 +252,7 @@ int main(int, char**)
         {
             ImGui::SetNextWindowPos(ImVec2(470, 10));
             ImGui::SetNextWindowSize(ImVec2(800, 705));
-            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
             
             graph.set_window(ImGui::GetCurrentWindow());
