@@ -74,6 +74,9 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     bool is_clicked = ImGui::IsMouseClicked(0);
     bool is_hovering = ImGui::IsWindowHovered();
 
+    if(is_clicked && is_hovering)
+        last_clicked_node = this;
+
     if(number_of_active_parents && is_clicked && is_hovering)
     {
         if(show_children)
@@ -112,9 +115,10 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
         refresh_nodes = true;
 }
 
-GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io)
+GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor& editor)
 {
     io_pointer = &io;
+    editor_pointer = &editor;
 
     int index = 0;
     int main_function_index = 0;
@@ -244,6 +248,21 @@ void GraphGui::key_input_check()
         scroll_x += SCROLL_SPEED;
     }
 
+    if((last_clicked_node != nullptr) 
+        && io_pointer->KeyShift 
+        && io_pointer->KeyCtrl 
+        && io_pointer->KeysDown['T'])
+    {
+        // ~ editor_pointer->set_function_focus(last_clicked_node->function->signature)
+        // ~ INSERT CODE HERE
+
+        // ~~~~~~~~~~~~~~~~~~
+
+        std::cout << last_clicked_node->function->signature << std::endl;
+        // Temporary (#TODO)
+        last_clicked_node = nullptr;
+    }
+
     current_node_size.x *= (100.0f - 3*io_pointer->MouseWheel)/100;
     current_node_size.y *= (100.0f - 3*io_pointer->MouseWheel)/100;
     current_node_size.x = std::max(NODE_MIN_SIZE_X, current_node_size.x);
@@ -276,5 +295,6 @@ void GraphGui::focus_node(std::string node_signature)
             break;
         }
 }
+
 
 } // namespace GraphGui

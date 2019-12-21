@@ -203,7 +203,7 @@ int main(int, char**)
     static std::string buffer;
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
-    GraphGui::GraphGui graph(call_graph, io);
+    GraphGui::GraphGui graph(call_graph, io, editor);
     // Main loop
 	LinuxCommands commands;
     while (!glfwWindowShouldClose(gui.window))
@@ -353,10 +353,9 @@ int main(int, char**)
         //*******************
         //JUMP TO SELECTED NODE
         //*******************
-        //hardcoded for main function
-        if(editor.GetSelectedText() == "main" && io.KeyCtrl && io.KeyCtrl && io.KeysDown['F'])
+        if(io.KeyShift && io.KeyCtrl && io.KeysDown['F'])
         {
-            graph.focus_node("main");
+            graph.focus_node(editor.GetSelectedText());
         }
 
         if(io.KeyCtrl && io.KeyCtrl && io.KeysDown['M'])
@@ -420,7 +419,7 @@ int main(int, char**)
 				commands.SetFileToAnalyze(filename);
 				commands.RunCommands();
 				call_graph = ExtractCallGraphFromFile("out.txt");
-				graph = GraphGui::GraphGui(call_graph, io);
+				graph = GraphGui::GraphGui(call_graph, io, editor);
 				
                 file = ".";
                 write = false;

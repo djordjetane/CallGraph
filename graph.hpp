@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <queue>
 #include "function_parser.hpp" 
+#include "editor_util/TextEditor.h"
 
 namespace GraphGui {
 
@@ -69,11 +70,15 @@ struct Node {
     void draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness);
 };
 
+// Last clicked node
+static Node* last_clicked_node = nullptr;
+
 struct GraphGui {
     ImGuiWindow* window;
     std::vector<std::unique_ptr<Node>> nodes;
     std::vector<size_t> layers;
     ImGuiIO* io_pointer;
+    TextEditor* editor_pointer;
 
     // constants
     int top_distance = 40;
@@ -82,7 +87,7 @@ struct GraphGui {
     int node_distance_y = 100;
     int node_line_thickness = 5;
     ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
-    explicit GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io);
+    explicit GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor& editor);
     
     GraphGui() = default;
 	GraphGui(const GraphGui&) = default;
