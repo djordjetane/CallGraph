@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "editor_util/editor_util.hpp"
+#include "editor_util/TextEditor.h"
 #include "graph.hpp"
 
 namespace fs = std::filesystem;
@@ -196,6 +197,9 @@ int main(int, char**)
     static char filename[255];
     strcpy(filename, "");
 
+    TextEditor editor;
+    editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
+
     static std::string buffer;
 
     ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
@@ -335,27 +339,23 @@ int main(int, char**)
 
             size_t written = buffer.length(); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
 
-            ImGui::BeginChild("###line_numbers", ImVec2(430,615), ImGuiWindowFlags_NoCollapse);
-                
-            int number_of_lines = 0;
-            number_of_lines = std::count(buffer.cbegin(), buffer.cend(), '\n');
-
-            std::string line_nums;
-            for(int i = 1; i <= number_of_lines+1; i++)
-            {
-                line_nums.append(std::to_string(i));
-                line_nums.append("\n");
-            }
-            ImGui::TextUnformatted(line_nums.c_str());
+            editor.Render("Source Code Editor");
+            buffer = editor.GetText();
             
-            ImGui::SameLine();
-            ImGui::InputTextMultiline("###input_src", &buffer, ImVec2(410, 590)
-                                    , ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_Multiline);
             if(written != buffer.length())
                 unsaved = true;
 
-            ImGui::EndChild();
+            
             ImGui::End();
+        }
+
+        //*******************
+        //JUMP TO SELECTED NODE
+        //*******************
+
+        if(editor.GetSelectedText() == "main" && io.KeyCtrl && io.KeyCtrl && io.KeysDown['F'])
+        {
+            std::cout << "Function main is selected\n";
         }
 
         //*******************
@@ -409,10 +409,12 @@ int main(int, char**)
                     buffer.append("\n");
                 }
                 
-				commands.SetFileToAnalyze(filename);
+                editor.SetText(buffer);
+
+				/*commands.SetFileToAnalyze(filename);
 				commands.RunCommands();
 				call_graph = ExtractCallGraphFromFile("out.txt");
-				graph = GraphGui::GraphGui(call_graph, io);
+				graph = GraphGui::GraphGui(call_graph, io);*/
 				
                 file = ".";
                 write = false;
