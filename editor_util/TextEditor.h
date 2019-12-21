@@ -266,6 +266,8 @@ public:
 	static const Palette& GetLightPalette();
 	static const Palette& GetRetroBluePalette();
 
+	void FocusNode(const std::string& function_name, ImGuiIO& io);
+
 private:
 	typedef std::vector<std::pair<std::regex, PaletteIndex>> RegexList;
 

@@ -353,10 +353,15 @@ int main(int, char**)
         //*******************
         //JUMP TO SELECTED NODE
         //*******************
-
+        //hardcoded for main function
         if(editor.GetSelectedText() == "main" && io.KeyCtrl && io.KeyCtrl && io.KeysDown['F'])
         {
-            std::cout << "Function main is selected\n";
+            graph.focus_node("main");
+        }
+
+        if(io.KeyCtrl && io.KeyCtrl && io.KeysDown['M'])
+        {
+            editor.SetSelection(TextEditor::Coordinates(4, 9), TextEditor::Coordinates(10, 9));
         }
 
         //*******************
