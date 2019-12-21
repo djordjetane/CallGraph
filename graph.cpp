@@ -62,7 +62,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     if(number_of_active_parents == 0)
         return; 
 
-    ImVec2 real_position = ImVec2(position.x - scroll_x, position.y - scroll_y);
+    ImVec2 real_position = ImVec2(position.x + scroll_x, position.y + scroll_y);
 
     ImGui::SetNextWindowPos(real_position);
     ImGui::SetNextWindowSize(size);
@@ -94,8 +94,8 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
             if(!neighbor->number_of_active_parents)
                 continue;
 
-            ImVec2 end_position = ImVec2(neighbor->position.x - scroll_x, 
-                                            neighbor->position.y - scroll_y);
+            ImVec2 end_position = ImVec2(neighbor->position.x + scroll_x, 
+                                            neighbor->position.y + scroll_y);
             end_position.x += 5;
             end_position.y += current_node_size.y/2;
 
@@ -229,19 +229,19 @@ void GraphGui::key_input_check()
 
     if(ImGui::IsKeyPressed('W') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
     {
-        scroll_y += SCROLL_SPEED;
+        scroll_y -= SCROLL_SPEED;
     }
     if(ImGui::IsKeyPressed('S') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
     {
-        scroll_y -= SCROLL_SPEED;
+        scroll_y += SCROLL_SPEED;
     }
     if(ImGui::IsKeyPressed('A') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
     {
-        scroll_x += SCROLL_SPEED;
+        scroll_x -= SCROLL_SPEED;
     }
     if(ImGui::IsKeyPressed('D') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
     {
-        scroll_x -= SCROLL_SPEED;
+        scroll_x += SCROLL_SPEED;
     }
 
     current_node_size.x *= (100.0f - 3*io_pointer->MouseWheel)/100;
@@ -252,6 +252,29 @@ void GraphGui::key_input_check()
     node_distance_y = 1.5*current_node_size.y;
     for(auto& node: nodes)
         node->set_size(current_node_size);
+}
+
+void GraphGui::focus_node(std::string node_signature)
+{
+    for(const auto& e : nodes)
+        if(e->function->signature == node_signature)
+        {
+            if(e->number_of_active_parents == 0)
+                continue; 
+                
+            int wx = window->Pos.x;
+            int wy = window->Pos.y;
+            int wx_mid = window->Size.x/2;
+            int wy_mid = window->Size.y/2;
+
+            int x = e->position.x - wx;
+            int y = e->position.y - wy;
+
+            scroll_x = wx_mid - x - e->size.x/2;
+            scroll_y = wy_mid - y - e->size.x/2;
+            
+            break;
+        }
 }
 
 } // namespace GraphGui

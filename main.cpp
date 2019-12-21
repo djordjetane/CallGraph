@@ -265,6 +265,7 @@ int main(int, char**)
             graph.set_window(ImGui::GetCurrentWindow());
             //PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
             graph.draw();
+            //graph.focus_node(std::string("base::base()"));
 
             ImGui::End();
             ImGui::PopClipRect();

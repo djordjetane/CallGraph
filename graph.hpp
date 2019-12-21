@@ -55,6 +55,9 @@ struct Node {
     Node();
     Node(ParserFunctionInfo* _function);
 
+    inline ImVec2 get_absolute_position() 
+        {return ImVec2(scroll_x + position.x, scroll_y + position.y);}
+
     inline void set_position(ImVec2 new_position) {position = new_position;}
     inline void set_depth(int new_depth) {depth = new_depth;}
     inline void set_size(ImVec2 new_size) {size = new_size;}
@@ -95,6 +98,8 @@ struct GraphGui {
     void calculate_depth(Node* node);
     void refresh();
     void key_input_check();
+
+    void focus_node(std::string node_signature);
 };
 
 } // namespace GraphGui
