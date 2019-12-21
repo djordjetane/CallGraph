@@ -17,7 +17,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "editor_util/editor_util.hpp"
-#include "graph.cpp"
+#include "graph.hpp"
 
 namespace fs = std::filesystem;
 
