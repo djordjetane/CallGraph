@@ -411,10 +411,10 @@ int main(int, char**)
                 
                 editor.SetText(buffer);
 
-				/*commands.SetFileToAnalyze(filename);
+				commands.SetFileToAnalyze(filename);
 				commands.RunCommands();
 				call_graph = ExtractCallGraphFromFile("out.txt");
-				graph = GraphGui::GraphGui(call_graph, io);*/
+				graph = GraphGui::GraphGui(call_graph, io);
 				
                 file = ".";
                 write = false;
