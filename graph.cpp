@@ -66,8 +66,16 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
 
     ImGui::SetNextWindowPos(real_position);
     ImGui::SetNextWindowSize(size);
-    ImGui::BeginChild(function->signature.c_str(), size, true);
-    show_info();
+    ImGui::BeginChild(function->signature.c_str(), size, false);
+    //show_info();
+
+    ImVec2 position = ImVec2(real_position.x + 50.f, real_position.y + 20.f);
+
+    ImU32 col32Node = ImColor(0.f, 247.f/255.f, 1.f);
+    ImU32 col32Text = ImColor(1.f, 1.f, 1.f);
+
+    window->DrawList->AddCircleFilled(position, 25.f, col32Node, 256);
+    window->DrawList->AddText(ImVec2(position.x - 25.f, position.y + 30.f), col32Text, function->signature.c_str());
 
     ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
@@ -108,6 +116,17 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
                 end_position,
                 line_color,
                 line_thickness);
+            if(start_position.x+current_node_size.x/2 <= end_position.x)    
+                window->DrawList->AddTriangleFilled(ImVec2(end_position.x + 10.f, end_position.y)
+                                                , ImVec2(end_position.x, end_position.y + 5.f)
+                                                , ImVec2(end_position.x, end_position.y - 5.f), line_color);
+            else
+            {
+                window->DrawList->AddTriangleFilled(ImVec2(start_position.x - 10.f, start_position.y)
+                                                , ImVec2(start_position.x, start_position.y + 5.f)
+                                                , ImVec2(start_position.x, start_position.y - 5.f), line_color);
+            }
+            
         }
     }
     ImGui::End();
