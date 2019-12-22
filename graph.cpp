@@ -116,7 +116,8 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
                 end_position,
                 line_color,
                 line_thickness);
-            if(start_position.x+current_node_size.x/2 <= end_position.x)    
+            //Drawing triangles for arrow end
+            if(start_position.x+current_node_size.x/2 <= end_position.x)   
                 window->DrawList->AddTriangleFilled(ImVec2(end_position.x + 10.f, end_position.y)
                                                 , ImVec2(end_position.x, end_position.y + 5.f)
                                                 , ImVec2(end_position.x, end_position.y - 5.f), line_color);
