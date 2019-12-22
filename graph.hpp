@@ -103,7 +103,7 @@ struct GraphGui {
     void calculate_depth(Node* node);
     void refresh();
     void key_input_check();
-
+    
     void focus_node(std::string node_signature);
 };
 

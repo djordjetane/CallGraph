@@ -358,11 +358,6 @@ int main(int, char**)
             graph.focus_node(editor.GetSelectedText());
         }
 
-        if(io.KeyCtrl && io.KeyCtrl && io.KeysDown['M'])
-        {
-            editor.SetSelection(TextEditor::Coordinates(4, 9), TextEditor::Coordinates(10, 9));
-        }
-
         //*******************
         //NEW BUTTON WINDOW
         //*******************

@@ -253,12 +253,22 @@ void GraphGui::key_input_check()
         && io_pointer->KeyCtrl 
         && io_pointer->KeysDown['T'])
     {
-        // ~ editor_pointer->set_function_focus(last_clicked_node->function->signature)
-        // ~ INSERT CODE HERE
+        std::vector<std::string> buffer_lines = editor_pointer->GetTextLines();
+        long unsigned row = 0, col = 0; 
+        for(auto begin = buffer_lines.begin(); begin != buffer_lines.end() && col == 0; begin++, row++)
+        {
+            col = begin->find(last_clicked_node->function->signature);
+            if(col == begin->npos)
+                col = 0;
+        }
+        row--;
 
-        // ~~~~~~~~~~~~~~~~~~
+        //Finds first ocurance not declaration (#FIXIT)
 
-        std::cout << last_clicked_node->function->signature << std::endl;
+        if(row != 0 || col != 0)
+            editor_pointer->SetSelection(TextEditor::Coordinates(row, col)
+                            , TextEditor::Coordinates(row, col + last_clicked_node->function->signature.length()));
+
         // Temporary (#TODO)
         last_clicked_node = nullptr;
     }
