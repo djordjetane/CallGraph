@@ -266,9 +266,12 @@ void GraphGui::key_input_check()
         //Finds first ocurance not declaration (#FIXIT)
 
         if(row != 0 || col != 0)
+        {
+            long unsigned last_pos = col + last_clicked_node->function->signature.length();
+            editor_pointer->SetCursorPosition(TextEditor::Coordinates(row, last_pos));
             editor_pointer->SetSelection(TextEditor::Coordinates(row, col)
-                            , TextEditor::Coordinates(row, col + last_clicked_node->function->signature.length()));
-
+                            , TextEditor::Coordinates(row, last_pos));
+        }
         // Temporary (#TODO)
         last_clicked_node = nullptr;
     }
