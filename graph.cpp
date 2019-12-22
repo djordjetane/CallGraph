@@ -54,7 +54,7 @@ void Node::hide_neighbours()
 
 void Node::show_info()
 {
-    ImGui::Text(function->signature.c_str());
+    ImGui::Text("%s", function->signature.c_str());
 }
 
 void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
