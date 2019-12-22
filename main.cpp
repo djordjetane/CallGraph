@@ -69,7 +69,6 @@ imgui imgui_create()
     {
         exit(EXIT_FAILURE);
     }
-        
 
     // Decide GL+GLSL versions
 #if __APPLE__
@@ -178,6 +177,8 @@ int RunParserCommand(const LinuxCommands& commands)
 	return result;
 }
 
+const static float EDITOR_GRAPH_RATIO = 0.35;  
+
 int main(int, char**)
 {
     imgui gui = imgui_create();
@@ -222,7 +223,6 @@ int main(int, char**)
 
             ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
 
-
         //*******************
         // KEY EVENTS
         //*******************
@@ -253,12 +253,17 @@ int main(int, char**)
             glfwSetWindowShouldClose(gui.window, GLFW_TRUE);
         }
 
+        float graph_size_x = io.DisplaySize.x*(1 - EDITOR_GRAPH_RATIO)-30;
+        float graph_size_y = io.DisplaySize.y-20;
+        float editor_size_x = io.DisplaySize.x*EDITOR_GRAPH_RATIO;
+        float editor_size_y = io.DisplaySize.y-20;
+        
         //*******************
         //GENERATED GRAPH WINDOW
         //*******************
         {
-            ImGui::SetNextWindowPos(ImVec2(470, 10));
-            ImGui::SetNextWindowSize(ImVec2(800, 705));
+            ImGui::SetNextWindowPos(ImVec2(editor_size_x+25, 10));
+            ImGui::SetNextWindowSize(ImVec2(graph_size_x, graph_size_y));
             ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
             
@@ -276,7 +281,7 @@ int main(int, char**)
         //*******************
         {   
             ImGui::SetNextWindowPos(ImVec2(15, 10));
-            ImGui::SetNextWindowSize(ImVec2(450, 705));
+            ImGui::SetNextWindowSize(ImVec2(editor_size_x, editor_size_y));
             //ImGui::SetNextWindowFocus();
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
             
