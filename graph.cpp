@@ -69,15 +69,17 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     ImGui::BeginChild(function->signature.c_str(), size, false);
     //show_info();
 
-    ImVec2 position = ImVec2(real_position.x + 50.f, real_position.y + 20.f);
+    ImVec2 position = ImVec2(real_position.x + current_node_size.x/2, 
+                             real_position.y + current_node_size.y/2);
 
     ImU32 col32Node = ImColor(0.f, 247.f/255.f, 1.f);
     ImU32 col32Text = ImColor(1.f, 1.f, 1.f);
 
-    float node_size = (size.x + size.y)/(5.5);
+    float node_size = current_node_size.x/2;
 
     window->DrawList->AddCircleFilled(position, node_size, col32Node, 256);
-    window->DrawList->AddText(ImVec2(position.x - 25.f, position.y + node_size + 5.f), col32Text, function->signature.c_str());
+    window->DrawList->AddText(ImVec2(position.x - current_node_size.x/2, position.y + node_size + 5.f),
+                                     col32Text, function->signature.c_str());
 
     ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 

@@ -26,12 +26,12 @@ static float scroll_x = 0;
 static float scroll_y = 0;
 const static float SCROLL_SPEED = 10;
 const static float NODE_MIN_SIZE_Y = 30;
-const static float NODE_MIN_SIZE_X = 2*NODE_MIN_SIZE_Y;
+const static float NODE_MIN_SIZE_X = NODE_MIN_SIZE_Y;
 
 // focus value
 static bool refresh_nodes = false;
 
-static ImVec2 current_node_size(100, 50);
+static ImVec2 current_node_size(NODE_MIN_SIZE_X, NODE_MIN_SIZE_Y);
 
 struct Function {
     std::string name;
