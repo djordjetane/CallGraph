@@ -315,15 +315,25 @@ int main(int, char**)
                 if(ImGui::BeginMenu("Edit"))
                 {
                     if(ImGui::MenuItem("Undo", "Ctrl+Z"))
-                    {}
+                    {
+                        editor.Undo();
+                    }
                     if(ImGui::MenuItem("Redo", "Ctrl+Y"))
-                    {}
+                    {
+                        editor.Redo();
+                    }
                     if(ImGui::MenuItem("Cut", "Ctrl+X"))
-                    {}
+                    {
+                        editor.Cut();
+                    }
                     if(ImGui::MenuItem("Copy", "Ctrl+C"))
-                    {}
+                    {
+                        editor.Copy();
+                    }
                     if(ImGui::MenuItem("Paste", "Ctrl+V"))
-                    {}
+                    {
+                        editor.Paste();
+                    }
 
                     ImGui::EndMenu();
                 }
