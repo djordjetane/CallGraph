@@ -74,8 +74,10 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     ImU32 col32Node = ImColor(0.f, 247.f/255.f, 1.f);
     ImU32 col32Text = ImColor(1.f, 1.f, 1.f);
 
-    window->DrawList->AddCircleFilled(position, 25.f, col32Node, 256);
-    window->DrawList->AddText(ImVec2(position.x - 25.f, position.y + 30.f), col32Text, function->signature.c_str());
+    float node_size = (size.x + size.y)/(5.5);
+
+    window->DrawList->AddCircleFilled(position, node_size, col32Node, 256);
+    window->DrawList->AddText(ImVec2(position.x - 25.f, position.y + node_size + 5.f), col32Text, function->signature.c_str());
 
     ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
@@ -277,6 +279,7 @@ void GraphGui::key_input_check()
         long unsigned row = 0, col = 0; 
         for(auto begin = buffer_lines.begin(); begin != buffer_lines.end() && col == 0; begin++, row++)
         {
+            col = begin->find(last_clicked_node->function->signature);
             col = begin->find(last_clicked_node->function->signature);
             if(col == begin->npos)
                 col = 0;
