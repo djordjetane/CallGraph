@@ -71,9 +71,11 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
     return res;
 }
 
+static bool warning = false;
+char new_name[64] = "";
+
 void draw_filebrowser(const FBAction& action, std::string& filename, bool& write, bool& is_clicked_OPEN)
 {
-    static char new_name[64] = "";
     static std::string error_msg = "";
     ImGui::SetNextWindowSize(ImVec2(500, 400));
     FBAction_to_string(action);
@@ -122,13 +124,21 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
             ImGui::InputText("###input_filename", new_name, 64);
             ImGui::SameLine();
             ImGui::Text("(*.cpp, *.hpp, *.h)");
+            ImGui::Separator();
+
+            if(warning)
+            {
+                ImGui::TextColored(ImVec4(218.f/255.f, 10.f/255.f, 10.f/255.f, 1.f), "%s", error_msg.c_str());
+            }
+
             if(ImGui::Button("OK"))
             {
                 if(fs::is_directory(filename))
                 {
                     if(strcmp(new_name, "") == 0)
                     {
-                        // ImGui::Text("Please enter file name\n");
+                        warning = true;
+                        error_msg = "Please enter file name\n";
                     }
                     else
                     {
@@ -136,12 +146,14 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
                         filename.append(new_name);
                         is_clicked_OPEN = false;
                         write = true;
+                        warning = false;
                     }
                     
                 }
                 else
                 {
-                    // ImGui::Text("File already exists\n");
+                    warning = true;
+                    error_msg = "File already exist!";
                 }
             }
             ImGui::SameLine();
