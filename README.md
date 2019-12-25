@@ -2,8 +2,8 @@
 
 ## Description
 
-Generate callgraph for your C++ code. CallGraph is implemented in C++ with [ImGui](https://github.com/ocornut/imgui).
-Using [clang](https://clang.llvm.org/) for generating file with nodes and [flex](https://westes.github.io/flex/manual/) and [bison](https://www.gnu.org/software/bison/manual/) for parsing that file.
+Generate callgraph for your C++ code. CallGraph is implemented in C++ with [ImGui](https://github.com/ocornut/imgui) (also integrated [ImGuiColorTextEdit](https://github.com/BalazsJako/ImGuiColorTextEdit)).
+Using [clang](https://clang.llvm.org/) for getting information about input source code.
 Still in development...
 
 ## Contributors:
