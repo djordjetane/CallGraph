@@ -1,10 +1,9 @@
-#ifndef PARSER_H
+#ifndef CLANG_INTERFACE_H
 #define CLANG_INTERFACE_H
 
 #include<vector>
 #include<string>
 #include<memory>
-#include<optional>
 
 #include "clang/AST/AST.h"
 #include "clang/AST/Decl.h"
@@ -24,6 +23,7 @@ class ASTUnit
 private:
     std::unique_ptr<clang::ASTUnit> ast;
 public:
+    ASTUnit() = default;
     explicit ASTUnit(std::unique_ptr<clang::ASTUnit> arg) : ast(std::move(arg))
     {}
 
@@ -37,58 +37,58 @@ public:
     }
 };
 
-ASTUnit BuildASTFromSource(const std::string& source)
-{
-    ASTUnit ast(clang::tooling::buildASTFromCode(source, "source.cc"));
-    return ast;
-}
 
 class ParamVarDecl
 {
 private:
     const clang::ParmVarDecl *decl{nullptr};
+    std::string name;
+    std::string type;
 public:
     ParamVarDecl() = default;
-    explicit ParamVarDecl(const clang::ParmVarDecl* p) : decl(p)
+    explicit ParamVarDecl(const clang::ParmVarDecl* p, unsigned index)
+        : decl(p), name(p->getNameAsString()), type(decl->getOriginalType().getAsString())
     {}
-
     unsigned ID() const
     {
         return decl->getID();
     }
-    std::string NameAsString() const
+    const std::string& NameAsString() const
     {
-        return decl->getNameAsString();
+        return name;
     }
-    std::string TypeAsString() const
+    const std::string& TypeAsString() const
     {
-        return decl->getOriginalType().getAsString();
+        return type;
     }
    operator bool() const
    {
       return decl;
    }
+
 };
 
 class FunctionDecl
 {
 private:
     const clang::FunctionDecl* decl {nullptr};
-
+    std::string name;
+    std::string return_type;
 public:
     FunctionDecl() = default;
-    explicit FunctionDecl(const clang::FunctionDecl* arg) : decl(arg) {}
+    explicit FunctionDecl(const clang::FunctionDecl* arg)
+        : decl(arg), name(arg->getNameAsString()), return_type(arg->getReturnType().getAsString()) {}
     unsigned ID() const
     {
         return decl->getID();
     }
-    std::string NameAsString() const
+    const std::string& NameAsString() const
     {
-        return decl->getNameAsString();
+        return name;
     }
-    std::string ReturnTypeAsString() const
+    const std::string& ReturnTypeAsString() const
     {
-        return decl->getReturnType().getAsString();
+        return return_type;
     }
 
     auto ParamBegin() const
@@ -99,6 +99,10 @@ public:
     {
         return decl->param_end();
     }
+    bool IsMain() const
+    {
+        return decl->isMain();
+    }
    operator bool() const
    {
       return decl;
@@ -108,13 +112,13 @@ public:
 
 struct Edge
 {
-   clang_interface::FunctionDecl caller;
-   clang_interface::FunctionDecl callee;
+   clang_interface::FunctionDecl* caller;
+   clang_interface::FunctionDecl* callee;
 };
 
 struct CallGraph
 {
-    using NodesList = std::vector<FunctionDecl>;
+    using NodesList = std::vector<std::unique_ptr<FunctionDecl>>;
     using EdgesList = std::vector<Edge>;
 
     NodesList nodes;
@@ -126,6 +130,8 @@ std::ostream& operator<<(std::ostream&, const FunctionDecl&);
 std::ostream& operator<<(std::ostream&, const Edge&);
 std::ostream& operator<<(std::ostream&, const CallGraph&);
 
+
+ASTUnit BuildASTFromSource(const std::string& source);
 void AddEdge(CallGraph &call_graph, Edge edge);
 std::optional<clang_interface::FunctionDecl> FindNodeWithId(const CallGraph& call_graph, unsigned id);
 CallGraph ExtractCallGraphFromAST(ASTUnit& ast);

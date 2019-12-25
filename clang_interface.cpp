@@ -34,8 +34,8 @@ std::ostream& operator<<(std::ostream& out, const FunctionDecl& func_decl)
 }
 std::ostream& operator<<(std::ostream& out, const Edge& edge)
 {
-    DUMP(out, edge.caller.ID());
-    DUMP(out, edge.callee.ID());
+    DUMP(out, edge.caller->ID());
+    DUMP(out, edge.callee->ID());
     return out;
 }
 std::ostream& operator<<(std::ostream& out, const CallGraph& call_graph)
@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& out, const CallGraph& call_graph)
     for(const auto& node : call_graph.nodes)
     {
         out << "Node:\n";
-        out << node << '\n';
+        out << *node << '\n';
     }
     out << "\n--EDGES--\n";
     for(const auto& edge : call_graph.edges)
@@ -79,33 +79,33 @@ public:
 
         auto existing_caller_node = std::find_if(begin(call_graph.nodes), end(call_graph.nodes),
                                                  [id = caller_decl->getID()](const auto& n) {
-                                                    return n.ID() == id; });
+                                                    return n->ID() == id; });
 
-        FunctionDecl new_caller_node;
+        FunctionDecl* new_caller_node;
         if(existing_caller_node == end(call_graph.nodes))
         {
-            call_graph.nodes.emplace_back(clang_interface::FunctionDecl{caller_decl});
-            new_caller_node = call_graph.nodes.back();
+            call_graph.nodes.emplace_back(std::make_unique<clang_interface::FunctionDecl>(caller_decl));
+            new_caller_node = call_graph.nodes.back().get();
         }
         else
         {
-            new_caller_node = *existing_caller_node;
+            new_caller_node = existing_caller_node->get();
         }
 
 
         auto existing_callee_node = std::find_if(begin(call_graph.nodes), end(call_graph.nodes),
                                                  [id = callee_decl->getID()](const auto& n) {
-                                                    return n.ID() == id; });
+                                                    return n->ID() == id; });
 
-        FunctionDecl new_callee_node;
+        FunctionDecl* new_callee_node;
         if(existing_callee_node == end(call_graph.nodes))
         {
-            call_graph.nodes.emplace_back(clang_interface::FunctionDecl{callee_decl});
-            new_callee_node = call_graph.nodes.back();
+            call_graph.nodes.emplace_back(std::make_unique<clang_interface::FunctionDecl>(callee_decl));
+            new_callee_node = call_graph.nodes.back().get();
         }
         else
         {
-            new_callee_node = *existing_callee_node;
+            new_callee_node = existing_callee_node->get();
         }
 
         AddEdge(call_graph, {new_caller_node, new_callee_node});
@@ -114,6 +114,12 @@ public:
 
 
 }; // CallerCalleeCallBack
+
+ASTUnit BuildASTFromSource(const std::string& source)
+{
+    ASTUnit ast(clang::tooling::buildASTFromCode(source, "source.cc"));
+    return ast;
+}
 
 clang_interface::CallGraph ExtractCallGraphFromAST(ASTUnit& ast)
 {

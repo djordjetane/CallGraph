@@ -20,6 +20,7 @@
 #include "editor_util/TextEditor.h"
 #include "graph.hpp"
 
+#include "clang_interface.h"
 namespace fs = std::filesystem;
 
 // About Desktop OpenGL function loaders:
@@ -139,44 +140,6 @@ void imgui_destroy(imgui* to_destroy)
     glfwTerminate();
 }
 
-
-struct LinuxCommands
-{
-	const std::string compile_template{"clang++-8 -g -O0 -emit-llvm {} -c -std=c++17"};
-	std::string cleanup{"rm *.bc callgraph.dot"};
-	std::string compile;
-	std::string link{"llvm-link-8 *.bc -o single.bc"};
-	std::string analyze{"opt-8 -analyze -std-link-opts -dot-callgraph single.bc"};
-	std::string demangle{"cat callgraph.dot | c++filt | cat > out.txt"};
-	
-	void SetFileToAnalyze(const std::string& filename)
-	{
-		compile = compile_template;
-		compile.replace(compile.find("{}"), 2, filename);
-		std::cout << compile << '\n';
-	}
-	
-	int RunCommands()
-	{
-		system(cleanup.c_str());
-		system(compile.c_str());
-		system(link.c_str());
-		system(analyze.c_str());
-		system(demangle.c_str());
-		system(cleanup.c_str());
-		return 0;
-	}
-};
-
-
-
-int RunParserCommand(const LinuxCommands& commands)
-{
-	int result = 0;
-
-	return result;
-}
-
 const static float EDITOR_GRAPH_RATIO = 0.35;  
 
 int main(int, char**)
@@ -203,10 +166,10 @@ int main(int, char**)
 
     static std::string buffer;
 
-    ParserFunctionCallGraph call_graph = ExtractCallGraphFromFile("out.txt");
-    GraphGui::GraphGui graph(call_graph, io, editor);
-    // Main loop
-	LinuxCommands commands;
+    clang_interface::ASTUnit abstract_syntax_tree;
+    clang_interface::CallGraph call_graph;
+    GraphGui::GraphGui graph;
+
     while (!glfwWindowShouldClose(gui.window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -424,13 +387,12 @@ int main(int, char**)
                     buffer.append("\n");
                 }
                 
+                abstract_syntax_tree = clang_interface::BuildASTFromSource(buffer);
+                call_graph = clang_interface::ExtractCallGraphFromAST(abstract_syntax_tree);
+                graph = GraphGui::GraphGui(call_graph, io, editor);
+
                 editor.SetText(buffer);
 
-				commands.SetFileToAnalyze(filename);
-				commands.RunCommands();
-				call_graph = ExtractCallGraphFromFile("out.txt");
-				graph = GraphGui::GraphGui(call_graph, io, editor);
-				
                 file = ".";
                 write = false;
             }

@@ -1,21 +1,14 @@
 #include "graph.hpp"
 
+#include<set>
 namespace GraphGui {
-
-Function::Function(const Function& f)
-        : name(f.name), id(f.id)
-        {}
-
-Function::Function(const std::string &_name, size_t _id)
-    : name(_name), id(_id)
-    {}
 
 Node::Node()
 {
     init();
 }
 
-Node::Node(ParserFunctionInfo* _function)
+Node::Node(clang_interface::FunctionDecl* _function)
     : function(_function)
 {
     init();
@@ -54,7 +47,7 @@ void Node::hide_neighbours()
 
 void Node::show_info()
 {
-    ImGui::Text("%s", function->signature.c_str());
+    ImGui::Text("%s", function->NameAsString().c_str());
 }
 
 void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
@@ -66,7 +59,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
 
     ImGui::SetNextWindowPos(real_position);
     ImGui::SetNextWindowSize(size);
-    ImGui::BeginChild(function->signature.c_str(), size, false);
+    ImGui::BeginChild(function->NameAsString().c_str(), size, false);
     //show_info();
 
     ImVec2 position = ImVec2(real_position.x + current_node_size.x/2, 
@@ -79,7 +72,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
 
     window->DrawList->AddCircleFilled(position, node_size, col32Node, 256);
     window->DrawList->AddText(ImVec2(position.x - current_node_size.x/2, position.y + node_size + 5.f),
-                                     col32Text, function->signature.c_str());
+                                     col32Text, function->NameAsString().c_str());
 
     ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
@@ -139,7 +132,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
         refresh_nodes = true;
 }
 
-GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor& editor)
+GraphGui::GraphGui(clang_interface::CallGraph& call_graph, ImGuiIO& io, TextEditor& editor)
 {
     io_pointer = &io;
     editor_pointer = &editor;
@@ -151,7 +144,7 @@ GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor&
         nodes.emplace_back(std::make_unique<Node>());
         nodes.back()->function = e.get();
 
-        if(nodes.back()->function->signature == "main")
+        if(nodes.back()->function->IsMain())
             main_function_index = index;
         index++;
     }
@@ -161,12 +154,12 @@ GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor&
 
     for(const auto[from, to] : call_graph.edges)
     {
-        auto from_node = std::find_if(nodes.begin(), nodes.end(), [id = from->id](const auto& n) {
-            return n->function->id == id;
+        auto from_node = std::find_if(nodes.begin(), nodes.end(), [id = from->ID()](const auto& n) {
+            return n->function->ID() == id;
         });
 
-        auto to_node = std::find_if(nodes.begin(), nodes.end(), [id = to->id](const auto& n) {
-            return n->function->id == id;
+        auto to_node = std::find_if(nodes.begin(), nodes.end(), [id = to->ID()](const auto& n) {
+            return n->function->ID() == id;
         });
 
         (*from_node)->add_edge((*to_node).get());
@@ -175,10 +168,10 @@ GraphGui::GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor&
     std::cout << "sup" << std::endl;
     for(const auto& e : nodes)
     {
-        std::cout << e->function->signature << '\n';
+        std::cout << e->function->NameAsString() << '\n';
         for(const auto& n: e->neighbors)
         {
-            std::cout << '\t' << n->function->signature << '\n';
+            std::cout << '\t' << n->function->NameAsString() << '\n';
         }
     }
     std::cout << std::endl;
@@ -217,7 +210,7 @@ void GraphGui::draw()
 
 void GraphGui::calculate_depth(Node* node) 
 { 
-    std::vector<bool> visited(nodes.size(), false);
+    std::set<unsigned> visited;
 
     std::queue<std::pair<Node*, int> > s;
     s.push(std::make_pair(node, 0));
@@ -227,9 +220,8 @@ void GraphGui::calculate_depth(Node* node)
         int depth = s.front().second;
         s.pop();
 
-        if(visited.at(node->function->id))
+        if(visited.insert(node->function->ID()).second == false)
             continue;
-        visited.at(node->function->id) = true;
 
         node->set_depth(depth);
         for(Node* neighbor: node->neighbors)
@@ -240,7 +232,7 @@ void GraphGui::calculate_depth(Node* node)
 void GraphGui::refresh()
 {
     for(auto& node: nodes)
-        ImGui::SetWindowFocus(node->function->signature.c_str());
+        ImGui::SetWindowFocus(node->function->NameAsString().c_str());
     refresh_nodes = false;
 }
 
@@ -281,8 +273,8 @@ void GraphGui::key_input_check()
         long unsigned row = 0, col = 0; 
         for(auto begin = buffer_lines.begin(); begin != buffer_lines.end() && col == 0; begin++, row++)
         {
-            col = begin->find(last_clicked_node->function->signature);
-            col = begin->find(last_clicked_node->function->signature);
+            col = begin->find(last_clicked_node->function->NameAsString());
+            col = begin->find(last_clicked_node->function->NameAsString());
             if(col == begin->npos)
                 col = 0;
         }
@@ -292,7 +284,7 @@ void GraphGui::key_input_check()
 
         if(row != 0 || col != 0)
             editor_pointer->SetSelection(TextEditor::Coordinates(row, col)
-                            , TextEditor::Coordinates(row, col + last_clicked_node->function->signature.length()));
+                            , TextEditor::Coordinates(row, col + last_clicked_node->function->NameAsString().length()));
 
         // Temporary (#TODO)
         last_clicked_node = nullptr;
@@ -308,10 +300,10 @@ void GraphGui::key_input_check()
         node->set_size(current_node_size);
 }
 
-void GraphGui::focus_node(std::string node_signature)
+void GraphGui::focus_node(const std::string& node_signature)
 {
     for(const auto& e : nodes)
-        if(e->function->signature == node_signature)
+        if(e->function->NameAsString() == node_signature)
         {
             if(e->number_of_active_parents == 0)
                 continue; 

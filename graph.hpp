@@ -16,7 +16,7 @@
 #include <utility>
 #include <algorithm>
 #include <queue>
-#include "function_parser.hpp" 
+#include "clang_interface.h"
 #include "editor_util/TextEditor.h"
 
 namespace GraphGui {
@@ -33,19 +33,12 @@ static bool refresh_nodes = false;
 
 static ImVec2 current_node_size(NODE_MIN_SIZE_X, NODE_MIN_SIZE_Y);
 
-struct Function {
-    std::string name;
-    size_t id;
-    // args...
 
-    Function(const Function& f);
-    Function(const std::string &_name, size_t _id);
-};
 
 struct Node {
     ImVec2 position;
     ImVec2 size;
-    ParserFunctionInfo* function;
+    clang_interface::FunctionDecl* function;
     std::vector<Node*> neighbors;
     
     int depth;
@@ -54,7 +47,7 @@ struct Node {
 
     void init();
     Node();
-    Node(ParserFunctionInfo* _function);
+    Node(clang_interface::FunctionDecl* _function);
 
     inline ImVec2 get_absolute_position() 
         {return ImVec2(scroll_x + position.x, scroll_y + position.y);}
@@ -87,7 +80,7 @@ struct GraphGui {
     int node_distance_y = 100;
     int node_line_thickness = 5;
     ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
-    explicit GraphGui(ParserFunctionCallGraph& call_graph, ImGuiIO& io, TextEditor& editor);
+    explicit GraphGui(clang_interface::CallGraph& call_graph, ImGuiIO& io, TextEditor& editor);
     
     GraphGui() = default;
 	GraphGui(const GraphGui&) = default;
@@ -104,7 +97,7 @@ struct GraphGui {
     void refresh();
     void key_input_check();
     
-    void focus_node(std::string node_signature);
+    void focus_node(const std::string& node_signature);
 };
 
 } // namespace GraphGui
