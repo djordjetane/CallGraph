@@ -40,12 +40,21 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
         // filter extension .cpp .hpp .h
         else
         {
-            if(fs::path(path).extension() == ".cpp" || fs::path(path).extension() == ".hpp" || fs::path(path).extension() == ".h")
+            if(fs::path(path).extension() == ".cpp" || fs::path(path).extension() == ".hpp" || fs::path(path).extension() == ".h"
+                    || fs::path(path).extension() == ".cc" || fs::path(path).extension() == ".c")
                 res.push_back(path);
         }
     }
 
-    std::sort(std::begin(res)+1, std::end(res));
+    std::sort(std::begin(res)+1, std::end(res), [](const auto entry1, const auto entry2){
+        if(fs::is_directory(entry1))
+        {
+            if(!fs::is_directory(entry2))
+                return true;
+            return entry1.compare(entry2) <= 0;
+        }
+        return false;
+    });
 
     return res;
 }
@@ -100,7 +109,7 @@ void draw_filebrowser(const char* action, std::string& filename, bool& write, bo
         
         ImGui::InputText("###input_filename", new_name, 64);
         ImGui::SameLine();
-        ImGui::Text("(*.cpp, *.hpp, *.h)");
+        ImGui::Text("(*.cpp, *.hpp, *.h)"); //.cpp, hpp, .h, .cc, .c
         ImGui::Separator();
 
         if(warning)
