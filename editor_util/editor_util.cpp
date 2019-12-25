@@ -24,27 +24,6 @@ void save(const char* new_filename, const std::string& buffer)
     outfile.close();   
 }
 
-static char action_string[11];
-
-void FBAction_to_string(const FBAction& action)
-{
-    switch (action)
-    {
-    case NEW:
-        strcpy(action_string, "NEW");
-        break;
-    case OPEN:
-        strcpy(action_string, "OPEN");
-        break;
-    case SAVE:
-        strcpy(action_string, "SAVE AS...");
-        break;
-    default:
-        std::cerr << "Unknown action for filebrowser\n";
-        exit(1);
-    }
-}
-
 std::vector<std::string> get_directory_files(const std::string& pathname)
 {   
     std::string path(pathname);
@@ -74,16 +53,15 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
 static bool warning = false;
 char new_name[64] = "";
 
-void draw_filebrowser(const FBAction& action, std::string& filename, bool& write, bool& is_clicked_OPEN)
+void draw_filebrowser(const char* action, std::string& filename, bool& write, bool& is_clicked_OPEN)
 {
     static std::string error_msg = "";
     ImGui::SetNextWindowSize(ImVec2(500, 400));
-    FBAction_to_string(action);
-    if(ImGui::Begin(action_string, &is_clicked_OPEN))
+    
+    if(ImGui::Begin(action, &is_clicked_OPEN))
     {
         if(!fs::is_directory(filename))
         {
-            // getting name of file
             size_t pos = filename.find_last_of("/");
             if(pos == filename.npos)
                 pos = 0;
@@ -91,76 +69,75 @@ void draw_filebrowser(const FBAction& action, std::string& filename, bool& write
                 pos++;
             std::string name = filename.substr(pos);
             strcpy(new_name, name.c_str());
-            filename = fs::path(filename).parent_path();
-            ImGui::Text("[D] %s\n\n", filename.c_str());
+            filename = fs::canonical(filename).parent_path();
         }
-        else
+
+        ImGui::Text("[D] %s\n\n", filename.c_str());
+        std::vector<std::string> files = get_directory_files(filename);
+        
+        for(auto& file : files)
         {
-            ImGui::Text("[D] %s\n\n", filename.c_str());
-            std::vector<std::string> files = get_directory_files(filename);
-            
-            for(auto& file : files)
+            // getting name of file
+            size_t pos = file.find_last_of("/");
+            if(pos == file.npos)
+                pos = 0;
+            else
+                pos++;
+            std::string name = file.substr(pos);
+            if(ImGui::Selectable(name.c_str()))
             {
-                // getting name of file
-                size_t pos = file.find_last_of("/");
-                if(pos == file.npos)
-                    pos = 0;
-                else
-                    pos++;
-                std::string name = file.substr(pos);
-                if(ImGui::Selectable(name.c_str()))
+                if(file == "<= BACK")
+                    filename = fs::canonical(filename).parent_path();
+                else    
+                    filename = fs::canonical(fs::path(file));
+                if(fs::is_regular_file(filename))
                 {
-                    if(file == "<= BACK")
-                        filename = fs::canonical(filename).parent_path();
-                    else    
-                        filename = fs::canonical(fs::path(file));
-                    if(fs::is_regular_file(filename))
-                    {
-                        strcpy(new_name, name.c_str());
-                    }
+                    strcpy(new_name, name.c_str());
+                    filename = fs::canonical(filename).parent_path();
                 }
             }
         }
-            ImGui::InputText("###input_filename", new_name, 64);
-            ImGui::SameLine();
-            ImGui::Text("(*.cpp, *.hpp, *.h)");
-            ImGui::Separator();
+        
+        ImGui::InputText("###input_filename", new_name, 64);
+        ImGui::SameLine();
+        ImGui::Text("(*.cpp, *.hpp, *.h)");
+        ImGui::Separator();
 
-            if(warning)
-            {
-                ImGui::TextColored(ImVec4(218.f/255.f, 10.f/255.f, 10.f/255.f, 1.f), "%s", error_msg.c_str());
-            }
+        if(warning)
+        {
+            ImGui::TextColored(ImVec4(218.f/255.f, 10.f/255.f, 10.f/255.f, 1.f), "%s", error_msg.c_str());
+        }
 
-            if(ImGui::Button("OK"))
+        if(ImGui::Button("OK"))
+        {
+            if(fs::is_directory(filename))
             {
-                if(fs::is_directory(filename))
-                {
-                    if(strcmp(new_name, "") == 0)
-                    {
-                        warning = true;
-                        error_msg = "Please enter file name\n";
-                    }
-                    else
-                    {
-                        filename.append("/");
-                        filename.append(new_name);
-                        is_clicked_OPEN = false;
-                        write = true;
-                        warning = false;
-                    }
-                    
-                }
-                else
+                if(strcmp(new_name, "") == 0)
                 {
                     warning = true;
-                    error_msg = "File already exist!";
+                    error_msg = "Please enter file name\n";
                 }
+                else
+                {
+                    filename.append("/");
+                    filename.append(new_name);
+                    is_clicked_OPEN = false;
+                    write = true;
+                    warning = false;
+                }
+                
             }
-            ImGui::SameLine();
-            if(ImGui::Button("Cancel"))
+            else
             {
-                is_clicked_OPEN = false;
+                warning = true;
+                error_msg = "File already exist!";
             }
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel"))
+        {
+            is_clicked_OPEN = false;
+        }
         
 
         ImGui::End();

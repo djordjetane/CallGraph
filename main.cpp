@@ -384,7 +384,7 @@ int main(int, char**)
             file = fs::canonical(file);
             static bool write = false;
 
-            draw_filebrowser(NEW, file, write, is_clicked_NEW);
+            draw_filebrowser("NEW", file, write, is_clicked_NEW);
             if(write)
             {
                 strcpy(filename, file.c_str());
@@ -409,7 +409,7 @@ int main(int, char**)
             static std::string file = ".";
             file = fs::canonical(file).string();
 
-            draw_filebrowser(OPEN, file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
+            draw_filebrowser("OPEN", file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
             if(write && fs::is_regular_file(file))
             {
                 strcpy(filename, file.c_str());
@@ -458,7 +458,7 @@ int main(int, char**)
             }
             else
             {
-                draw_filebrowser(SAVE, file, write, bt_Save);
+                draw_filebrowser("SAVE", file, write, bt_Save);
                     //draw_save(file, src_code_buffer, src_code_buffer.length, bt_Save); //  editor_util/editor_util.hpp
                 if(write && (!fs::exists(file) || fs::is_regular_file(file)))
                 {

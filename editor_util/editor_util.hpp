@@ -5,14 +5,9 @@
 #include <string>
 #include "../imgui_util/imgui.h"
 
-enum FBAction
-{
-    NEW, OPEN, SAVE
-};
 
 void save(const char* new_filename, const std::string& buffer);
 std::vector<std::string> get_directory_files(const std::string& pathname);
-void draw_filebrowser(const FBAction& action, std::string& filename, bool& write, bool& is_clicked_OPEN);
-void FBAction_to_string(const FBAction& action);
+void draw_filebrowser(const char* action, std::string& filename, bool& write, bool& is_clicked_OPEN);
 
 #endif //EDITOR_UTIL__HPP
