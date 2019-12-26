@@ -1,4 +1,4 @@
-
+#include<algorithm>
 int f(int arr[], int from, int to)
 {
     return 1;

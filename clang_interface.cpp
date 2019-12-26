@@ -117,7 +117,7 @@ public:
 
 ASTUnit BuildASTFromSource(const std::string& source)
 {
-    ASTUnit ast(clang::tooling::buildASTFromCode(source, "source.cc"));
+    ASTUnit ast(clang::tooling::buildASTFromCodeWithArgs(source, {"-std=c++17", "-nostdinc++", "-v"}));
     return ast;
 }
 

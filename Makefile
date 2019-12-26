@@ -12,7 +12,7 @@
 #
 
 #CXX = g++-8 -std=c++17
-CXX = clang++-9 -std=c++17
+CXX = clang++-8 -std=c++17
 
 EXE = SourceExplorer
 SOURCES = main.cpp editor_util/editor_util.cpp editor_util/TextEditor.cpp graph.cpp clang_interface.cpp
@@ -23,7 +23,7 @@ UNAME_S := $(shell uname -s)
 
 LLVMCOMPONENTS := cppbackend
 RTTIFLAG := -fno-rtti
-LLVMCONFIG := /usr/bin/llvm-config-9
+LLVMCONFIG := /usr/bin/llvm-config-8
 
 
 
