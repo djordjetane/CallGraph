@@ -169,6 +169,7 @@ int main(int, char**)
     clang_interface::ASTUnit abstract_syntax_tree;
     clang_interface::CallGraph call_graph;
     GraphGui::GraphGui graph;
+    graph.io_pointer = &io;
 
     while (!glfwWindowShouldClose(gui.window))
     {
