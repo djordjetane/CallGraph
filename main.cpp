@@ -168,7 +168,9 @@ int main(int, char**)
 
     clang_interface::ASTUnit abstract_syntax_tree;
     clang_interface::CallGraph call_graph;
+
     GraphGui::GraphGui graph(&io, &editor);
+
 
     while (!glfwWindowShouldClose(gui.window))
     {

@@ -13,9 +13,10 @@ Still in development...
 
 ## Install
 sudo apt-get update
+
 sudo apt-get upgrade
-sudo apt-get install build-essential make clang-8 libclang-8-dev llvm-8-tools libglfw3 libglfw3-dev pkg-config
-libglew-dev libncurses5-dev
+
+sudo apt-get install build-essential make clang-8 libclang-8-dev llvm-8-tools libglfw3 libglfw3-dev pkg-config libglew-dev libncurses5-dev
 
 ## current state:
 ![](state.gif)
