@@ -132,56 +132,6 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
         refresh_nodes = true;
 }
 
-GraphGui::GraphGui(clang_interface::CallGraph& call_graph, ImGuiIO& io, TextEditor& editor)
-{
-    io_pointer = &io;
-    editor_pointer = &editor;
-
-    int index = 0;
-    int main_function_index = 0;
-    for(const auto& e : call_graph.nodes)
-    {
-        nodes.emplace_back(std::make_unique<Node>());
-        nodes.back()->function = e.get();
-
-        if(nodes.back()->function->IsMain())
-            main_function_index = index;
-        index++;
-    }
-
-    // postavljamo da main ima nulti indeks
-    swap(nodes.at(0), nodes.at(main_function_index));
-
-    for(const auto[from, to] : call_graph.edges)
-    {
-        auto from_node = std::find_if(nodes.begin(), nodes.end(), [id = from->ID()](const auto& n) {
-            return n->function->ID() == id;
-        });
-
-        auto to_node = std::find_if(nodes.begin(), nodes.end(), [id = to->ID()](const auto& n) {
-            return n->function->ID() == id;
-        });
-
-        (*from_node)->add_edge((*to_node).get());
-    }
-    
-    std::cout << "sup" << std::endl;
-    for(const auto& e : nodes)
-    {
-        std::cout << e->function->NameAsString() << '\n';
-        for(const auto& n: e->neighbors)
-        {
-            std::cout << '\t' << n->function->NameAsString() << '\n';
-        }
-    }
-    std::cout << std::endl;
-
-    layers.resize(nodes.size(), 0);
-    nodes.at(0)->number_of_active_parents = 1;
-    
-    calculate_depth(nodes.front().get());
-}
-
 void GraphGui::set_window(ImGuiWindow* new_window) 
 {
     window = new_window;
@@ -323,5 +273,51 @@ void GraphGui::focus_node(const std::string& node_signature)
         }
 }
 
+void GraphGui::set_callgraph (const clang_interface::CallGraph& call_graph)
+{
+    int index = 0;
+    int main_function_index = 0;
+    for(const auto& e : call_graph.nodes)
+    {
+        nodes.emplace_back(std::make_unique<Node>());
+        nodes.back()->function = e.get();
+
+        if(nodes.back()->function->IsMain())
+            main_function_index = index;
+        index++;
+    }
+
+    // postavljamo da main ima nulti indeks
+    swap(nodes.at(0), nodes.at(main_function_index));
+
+    for(const auto[from, to] : call_graph.edges)
+    {
+        auto from_node = std::find_if(nodes.begin(), nodes.end(), [id = from->ID()](const auto& n) {
+            return n->function->ID() == id;
+        });
+
+        auto to_node = std::find_if(nodes.begin(), nodes.end(), [id = to->ID()](const auto& n) {
+            return n->function->ID() == id;
+        });
+
+        (*from_node)->add_edge((*to_node).get());
+    }
+
+    std::cout << "sup" << std::endl;
+    for(const auto& e : nodes)
+    {
+        std::cout << e->function->NameAsString() << '\n';
+        for(const auto& n: e->neighbors)
+        {
+            std::cout << '\t' << n->function->NameAsString() << '\n';
+        }
+    }
+    std::cout << std::endl;
+
+    layers.resize(nodes.size(), 0);
+    nodes.at(0)->number_of_active_parents = 1;
+
+    calculate_depth(nodes.front().get());
+}
 
 } // namespace GraphGui

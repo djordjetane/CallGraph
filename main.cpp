@@ -168,7 +168,7 @@ int main(int, char**)
 
     clang_interface::ASTUnit abstract_syntax_tree;
     clang_interface::CallGraph call_graph;
-    GraphGui::GraphGui graph;
+    GraphGui::GraphGui graph(&io, &editor);
 
     while (!glfwWindowShouldClose(gui.window))
     {
@@ -389,8 +389,7 @@ int main(int, char**)
                 
                 abstract_syntax_tree = clang_interface::BuildASTFromSource(buffer);
                 call_graph = clang_interface::ExtractCallGraphFromAST(abstract_syntax_tree);
-                graph = GraphGui::GraphGui(call_graph, io, editor);
-
+                graph.set_callgraph(call_graph);
                 editor.SetText(buffer);
 
                 file = ".";

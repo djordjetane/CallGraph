@@ -66,7 +66,8 @@ struct Node {
 // Last clicked node
 static Node* last_clicked_node = nullptr;
 
-struct GraphGui {
+class GraphGui {
+private:
     ImGuiWindow* window;
     std::vector<std::unique_ptr<Node>> nodes;
     std::vector<size_t> layers;
@@ -80,17 +81,17 @@ struct GraphGui {
     int node_distance_y = 100;
     int node_line_thickness = 5;
     ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
-    explicit GraphGui(clang_interface::CallGraph& call_graph, ImGuiIO& io, TextEditor& editor);
-    
-    GraphGui() = default;
-	GraphGui(const GraphGui&) = default;
-	GraphGui(GraphGui&&) = default;
-	
-	GraphGui& operator=(GraphGui&&) = default;
-	GraphGui& operator=(const GraphGui&) = default;
-	
-	~GraphGui() = default;
+public:
+    GraphGui(ImGuiIO* io, TextEditor *editor)
+        : io_pointer(io), editor_pointer(editor) {}
+    GraphGui(const GraphGui&) = default;
+    GraphGui(GraphGui&&) = default;
 
+    GraphGui& operator=(GraphGui&&) = default;
+    GraphGui& operator=(const GraphGui&) = default;
+
+    ~GraphGui() = default;
+    void set_callgraph(const clang_interface::CallGraph& call_graph);
     void set_window(ImGuiWindow* new_window);
     void draw();
     void calculate_depth(Node* node);
