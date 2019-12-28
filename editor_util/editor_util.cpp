@@ -53,7 +53,12 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
                 return true;
             return entry1.compare(entry2) <= 0;
         }
-        return false;
+        else if(fs::is_directory(entry2))
+        {
+            return false;
+        }
+        else return entry1.compare(entry2) <= 0; 
+        
     });
 
     return res;
