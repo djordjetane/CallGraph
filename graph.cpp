@@ -290,7 +290,10 @@ void GraphGui::BuildCallgraphFromSource(std::string source)
             main_function_index = index;
         index++;
     }
-
+    if(nodes.empty())
+    {
+        return;
+    }
     // postavljamo da main ima nulti indeks
     swap(nodes.at(0), nodes.at(main_function_index));
 
