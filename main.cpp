@@ -56,95 +56,102 @@ static void glfw_error_callback(int error, const char* description)
 
 struct imgui
 {
+
+};
+
+namespace gui {
+class MainWindow {
     const char* glsl_version;
     GLFWwindow* window;
     bool err;
+public:
+    GLFWwindow* Window()
+    {
+        return window;
+    }
+    MainWindow() {
+        // Setup window
+        glfwSetErrorCallback(glfw_error_callback);
+        if (!glfwInit())
+        {
+            exit(EXIT_FAILURE);
+        }
+
+        // Decide GL+GLSL versions
+    #if __APPLE__
+        // GL 3.2 + GLSL 150
+        glsl_version = "#version 150";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    #else
+        // GL 3.0 + GLSL 130
+        glsl_version = "#version 130";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    #endif
+
+        // Create window with graphics context
+        window = glfwCreateWindow(1280, 720, "CallGraph", NULL, NULL);
+        if (window == NULL)
+        {
+            exit(EXIT_FAILURE);
+        }
+
+        glfwMakeContextCurrent(window);
+        glfwSwapInterval(1); // Enable vsync
+
+        // Initialize OpenGL loader
+    #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
+        err = gl3wInit() != 0;
+    #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
+        err = glewInit() != GLEW_OK;
+    #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+        err = gladLoadGL() == 0;
+    #else
+        err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
+    #endif
+        if (err)
+        {
+            fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        //ImGui::StyleColorsClassic();
+
+        // Setup Platform/Renderer bindings
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init(glsl_version);
+    }
+
+    ~MainWindow() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+};
 };
 
-imgui imgui_create()
-{
-    imgui result;
-    // Setup window
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit()) 
-    {
-        exit(EXIT_FAILURE);
-    }
-
-    // Decide GL+GLSL versions
-#if __APPLE__
-    // GL 3.2 + GLSL 150
-    result.glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    result.glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
-
-    // Create window with graphics context
-    result.window = glfwCreateWindow(1280, 720, "CallGraph", NULL, NULL);
-    if (result.window == NULL)
-    {
-        exit(EXIT_FAILURE);
-    }
-    
-    glfwMakeContextCurrent(result.window);
-    glfwSwapInterval(1); // Enable vsync
-
-    // Initialize OpenGL loader
-#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-    result.err = gl3wInit() != 0;
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-    result.err = glewInit() != GLEW_OK;
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-    result.err = gladLoadGL() == 0;
-#else
-    result.err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
-#endif
-    if (result.err)
-    {
-        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(result.window, true);
-    ImGui_ImplOpenGL3_Init(result.glsl_version);
-    return result;
-}
-
-void imgui_destroy(imgui* to_destroy)
-{
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(to_destroy->window);
-    glfwTerminate();
-}
 
 const static float EDITOR_GRAPH_RATIO = 0.35;  
 
 int main(int, char**)
 {
-    imgui gui = imgui_create();
+    gui::MainWindow main_window;
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("imgui_util/misc/fonts/Cousine-Regular.ttf", 15.0f);
 
@@ -172,7 +179,7 @@ int main(int, char**)
     GraphGui::GraphGui graph(&io, &editor);
 
 
-    while (!glfwWindowShouldClose(gui.window))
+    while (!glfwWindowShouldClose(main_window.Window()))
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -215,7 +222,7 @@ int main(int, char**)
         // EXIT
         if(io.KeysDown['Q'] && io.KeyCtrl)
         {
-            glfwSetWindowShouldClose(gui.window, GLFW_TRUE);
+            glfwSetWindowShouldClose(main_window.Window(), GLFW_TRUE);
         }
 
         float graph_size_x = io.DisplaySize.x*(1 - EDITOR_GRAPH_RATIO)-30;
@@ -273,7 +280,7 @@ int main(int, char**)
                     }
                     if(ImGui::MenuItem("Exit", "Ctrl+Q"))
                     {
-                        glfwSetWindowShouldClose(gui.window, GLFW_TRUE);
+                        glfwSetWindowShouldClose(main_window.Window(), GLFW_TRUE);
                     }
                     ImGui::EndMenu();
                 }
@@ -486,16 +493,15 @@ int main(int, char**)
         // Rendering
         ImGui::Render();
         int display_w, display_h;
-        glfwGetFramebufferSize(gui.window, &display_w, &display_h);
+        glfwGetFramebufferSize(main_window.Window(), &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(gui.window);
+        glfwSwapBuffers(main_window.Window());
     }
 
-    imgui_destroy(&gui);
 
     return 0;
 }
