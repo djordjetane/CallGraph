@@ -52,7 +52,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-const static float EDITOR_GRAPH_RATIO = 0.35;
+const static float EDITOR_GRAPH_RATIO = 0.40;
 
 //GraphGui::GraphGui graph(nullptr);
 
@@ -157,11 +157,6 @@ class SourceCodePanel {
     bool unsaved = true;
     bool should_build_callgraph = false;
 
-    enum class State
-    {
-        Idle, Editing, DoneEditing, OpenCliked, NewCliked, EditCliked
-    } state;
-
 public:
     SourceCodePanel(ImGuiIO& io, MainWindow& main_window) : io(io), main_window(main_window) {
         editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
@@ -229,8 +224,8 @@ public:
         float editor_size_x = io.DisplaySize.x*EDITOR_GRAPH_RATIO;
         float editor_size_y = io.DisplaySize.y-20;
         {
-            ImGui::SetNextWindowPos(ImVec2(15, 10));
-            ImGui::SetNextWindowSize(ImVec2(editor_size_x, editor_size_y));
+            ImGui::SetNextWindowPos(ImVec2(15, 10), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(editor_size_x, editor_size_y), ImGuiCond_FirstUseEver);
             //ImGui::SetNextWindowFocus();
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
 
@@ -467,13 +462,11 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("imgui_util/misc/fonts/Cousine-Regular.ttf", 15.0f);
 
-
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-
 
     gui::SourceCodePanel source_code_panel(io, main_window);
     GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
+
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();
@@ -496,8 +489,8 @@ int main(int, char**)
         //GENERATED GRAPH WINDOW
         //*******************
         {
-            ImGui::SetNextWindowPos(ImVec2(editor_size_x+25, 10));
-            ImGui::SetNextWindowSize(ImVec2(graph_size_x, graph_size_y));
+            ImGui::SetNextWindowPos(ImVec2(editor_size_x+25, 10), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(graph_size_x, graph_size_y), ImGuiCond_FirstUseEver);
             ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
 
