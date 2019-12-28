@@ -172,8 +172,7 @@ int main(int, char**)
 
     std::string buffer;
 
-    clang_interface::ASTUnit abstract_syntax_tree;
-    clang_interface::CallGraph call_graph;
+
 
     GraphGui::GraphGui graph(&io, &editor);
 
@@ -390,9 +389,7 @@ int main(int, char**)
                     buffer.append("\n");
                 }
                 
-                abstract_syntax_tree = clang_interface::BuildASTFromSource(buffer);
-                call_graph = clang_interface::ExtractCallGraphFromAST(abstract_syntax_tree);
-                graph.set_callgraph(call_graph);
+                graph.BuildCallgraphFromSource(buffer);
                 editor.SetText(buffer);
 
                 file = ".";
