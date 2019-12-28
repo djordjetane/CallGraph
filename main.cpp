@@ -23,29 +23,8 @@
 #include "clang_interface.h"
 namespace fs = std::filesystem;
 
-// About Desktop OpenGL function loaders:
-//  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
-//  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
-//  You may use another loader/header of your choice (glext, glLoadGen, etc.), or chose to manually implement your own.
-#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-#include <GL/gl3w.h>    // Initialize with gl3wInit()
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-#include <GL/glew.h>    // Initialize with glewInit()
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-#include <glad/glad.h>  // Initialize with gladLoadGL()
-#else
-#include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
-#endif
-
-// Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h>
-
-// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
-// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
-#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
-#pragma comment(lib, "legacy_stdio_definitions")
-#endif
+#include <GL/glew.h> 
+#include <GLFW/glfw3.h>  //must be after opengl
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -174,18 +153,11 @@ int main(int, char**)
 
     std::string buffer;
 
-
-
     GraphGui::GraphGui graph(&io, &editor);
 
 
     while (!glfwWindowShouldClose(main_window.Window()))
     {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
         // Start the Dear ImGui frame
@@ -315,8 +287,9 @@ int main(int, char**)
             }
 
             // Writing file name instead of absoulte path
-            
-            ImGui::Text("%s", filename.c_str());
+            int position = filename.find_last_of('/');
+            position = position == filename.npos ? 0 : position + 1;
+            ImGui::Text("%s", (filename.substr(position)).c_str());
             ImGui::SameLine();
             ImGui::Text("%s", (unsaved ? "*" : ""));
 
@@ -482,9 +455,6 @@ int main(int, char**)
                 ImGui::End();
             }
         }
-        
-
-
 
         if(editor.SecondsSinceLastTextChange() == 2 && should_build_callgraph)
         {

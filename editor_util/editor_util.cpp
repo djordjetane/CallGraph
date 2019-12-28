@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <array>
+#include "../imgui_util/misc/cpp/imgui_stdlib.h"
 
 namespace fs = std::filesystem;
 
@@ -64,8 +65,8 @@ std::vector<std::string> get_directory_files(const std::string& pathname)
     return res;
 }
 
-static bool warning = false;
-char new_name[64] = "";
+bool warning = false;
+std::string new_name = "";
 
 void draw_filebrowser(const char* action, std::string& filename, bool& write, bool& is_clicked_OPEN)
 {
@@ -82,7 +83,7 @@ void draw_filebrowser(const char* action, std::string& filename, bool& write, bo
             else
                 pos++;
             std::string name = filename.substr(pos);
-            strcpy(new_name, name.c_str());
+            new_name = name;
             filename = fs::canonical(filename).parent_path();
         }
 
@@ -93,10 +94,8 @@ void draw_filebrowser(const char* action, std::string& filename, bool& write, bo
         {
             // getting name of file
             size_t pos = file.find_last_of("/");
-            if(pos == file.npos)
-                pos = 0;
-            else
-                pos++;
+            pos = pos == file.npos ? 0 : pos + 1;
+            
             std::string name = file.substr(pos);
             if(ImGui::Selectable(name.c_str()))
             {
@@ -106,13 +105,13 @@ void draw_filebrowser(const char* action, std::string& filename, bool& write, bo
                     filename = fs::canonical(fs::path(file));
                 if(fs::is_regular_file(filename))
                 {
-                    strcpy(new_name, name.c_str());
+                    new_name = name;
                     filename = fs::canonical(filename).parent_path();
                 }
             }
         }
         
-        ImGui::InputText("###input_filename", new_name, 64);
+        ImGui::InputText("###input_filename", &new_name);
         ImGui::SameLine();
         ImGui::Text("(*.cpp, *.hpp, *.h)"); //.cpp, hpp, .h, .cc, .c
         ImGui::Separator();
@@ -126,7 +125,7 @@ void draw_filebrowser(const char* action, std::string& filename, bool& write, bo
         {
             if(fs::is_directory(filename))
             {
-                if(strcmp(new_name, "") == 0)
+                if(new_name == "")
                 {
                     warning = true;
                     error_msg = "Please enter file name\n";
