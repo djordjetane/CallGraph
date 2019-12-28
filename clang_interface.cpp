@@ -76,7 +76,10 @@ public:
             return;
         }
         auto callee_decl = callee_call_expr_decl->getDirectCallee();
-
+        if(callee_decl == nullptr)
+        {
+            return;
+        }
         auto existing_caller_node = std::find_if(begin(call_graph.nodes), end(call_graph.nodes),
                                                  [id = caller_decl->getID()](const auto& n) {
                                                     return n->ID() == id; });
