@@ -163,6 +163,8 @@ int main(int, char**)
     bool key_event_open = false;
     bool key_event_save = false;
     bool unsaved = true;
+
+    bool should_build_callgraph = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     std::string filename;
@@ -191,7 +193,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-            ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
+        ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
 
         //*******************
         // KEY EVENTS
@@ -481,6 +483,20 @@ int main(int, char**)
             }
         }
         
+
+
+
+        if(editor.SecondsSinceLastTextChange() == 2 && should_build_callgraph)
+        {
+            graph.BuildCallgraphFromSource(buffer);
+            should_build_callgraph = false;
+        }
+
+        if(editor.IsTextChanged())
+        {
+            should_build_callgraph = true;
+        }
+
         // Rendering
         ImGui::Render();
         int display_w, display_h;

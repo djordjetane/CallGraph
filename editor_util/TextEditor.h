@@ -268,6 +268,12 @@ public:
 
 	void FocusNode(const std::string& function_name, ImGuiIO& io);
 
+        auto SecondsSinceLastTextChange() const
+        {
+            auto now = std::chrono::system_clock::now();
+            return std::chrono::duration_cast<std::chrono::seconds>(now - mLastTextChangeTime).count();
+        }
+
 private:
 	typedef std::vector<std::pair<std::regex, PaletteIndex>> RegexList;
 
@@ -388,4 +394,5 @@ private:
 	uint64_t mStartTime;
 
 	float mLastClick;
+        std::chrono::system_clock::time_point mLastTextChangeTime;
 };

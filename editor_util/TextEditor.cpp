@@ -48,6 +48,7 @@ TextEditor::TextEditor()
 	, mIgnoreImGuiChild(false)
 	, mShowWhitespaces(true)
 	, mStartTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
+        , mLastTextChangeTime(std::chrono::system_clock::now())
 {
 	SetPalette(GetDarkPalette());
 	SetLanguageDefinition(LanguageDefinition::HLSL());
@@ -255,6 +256,7 @@ void TextEditor::DeleteRange(const Coordinates & aStart, const Coordinates & aEn
 	}
 
 	mTextChanged = true;
+        mLastTextChangeTime = std::chrono::system_clock::now();
 }
 
 int TextEditor::InsertTextAt(Coordinates& /* inout */ aWhere, const char * aValue)
@@ -301,6 +303,7 @@ int TextEditor::InsertTextAt(Coordinates& /* inout */ aWhere, const char * aValu
 		}
 
 		mTextChanged = true;
+                mLastTextChangeTime = std::chrono::system_clock::now();
 	}
 
 	return totalLines;
@@ -601,6 +604,7 @@ void TextEditor::RemoveLine(int aStart, int aEnd)
 	assert(!mLines.empty());
 
 	mTextChanged = true;
+        mLastTextChangeTime = std::chrono::system_clock::now();
 }
 
 void TextEditor::RemoveLine(int aIndex)
@@ -631,6 +635,7 @@ void TextEditor::RemoveLine(int aIndex)
 	assert(!mLines.empty());
 
 	mTextChanged = true;
+        mLastTextChangeTime = std::chrono::system_clock::now();
 }
 
 TextEditor::Line& TextEditor::InsertLine(int aIndex)
@@ -1172,6 +1177,7 @@ void TextEditor::SetText(const std::string & aText)
 	}
 
 	mTextChanged = true;
+        mLastTextChangeTime = std::chrono::system_clock::now();
 	mScrollToTop = true;
 
 	mUndoBuffer.clear();
@@ -1203,6 +1209,7 @@ void TextEditor::SetTextLines(const std::vector<std::string> & aLines)
 	}
 
 	mTextChanged = true;
+        mLastTextChangeTime = std::chrono::system_clock::now();
 	mScrollToTop = true;
 
 	mUndoBuffer.clear();
@@ -1302,6 +1309,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift)
 				AddUndo(u);
 
 				mTextChanged = true;
+                                mLastTextChangeTime = std::chrono::system_clock::now();
 
 				EnsureCursorVisible();
 			}
@@ -1374,7 +1382,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift)
 	}
 
 	mTextChanged = true;
-
+        mLastTextChangeTime = std::chrono::system_clock::now();
 	u.mAddedEnd = GetActualCursorCoordinates();
 	u.mAfter = mState;
 
@@ -1805,7 +1813,7 @@ void TextEditor::Delete()
 		}
 
 		mTextChanged = true;
-
+                mLastTextChangeTime = std::chrono::system_clock::now();
 		Colorize(pos.mLine, 1);
 	}
 
@@ -1882,6 +1890,7 @@ void TextEditor::Backspace()
 		}
 
 		mTextChanged = true;
+                mLastTextChangeTime = std::chrono::system_clock::now();
 
 		EnsureCursorVisible();
 		Colorize(mState.mCursorPosition.mLine, 1);
@@ -3158,3 +3167,4 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::Lua()
 	}
 	return langDef;
 }
+
