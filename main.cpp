@@ -165,8 +165,7 @@ int main(int, char**)
     bool unsaved = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    char filename[255];
-    strcpy(filename, "");
+    std::string filename;
 
     TextEditor editor;
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
@@ -217,7 +216,8 @@ int main(int, char**)
         if(io.KeysDown['S'] && io.KeyShift && io.KeyCtrl)
         {
             key_event_save = true;
-            strcpy(filename, "");
+            filename.clear();
+
         }
         // EXIT
         if(io.KeysDown['Q'] && io.KeyCtrl)
@@ -276,7 +276,7 @@ int main(int, char**)
                     if(ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                     {
                         bt_Save = true;
-                        strcpy(filename, "");
+                        filename.clear();
                     }
                     if(ImGui::MenuItem("Exit", "Ctrl+Q"))
                     {
@@ -314,14 +314,8 @@ int main(int, char**)
             }
 
             // Writing file name instead of absoulte path
-            char* name = NULL;
-            name = strrchr(filename, '/');
-            if(name == NULL)
-                name = &filename[0];
-            else
-                name++;
             
-            ImGui::Text("%s", name);
+            ImGui::Text("%s", filename.c_str());
             ImGui::SameLine();
             ImGui::Text("%s", (unsaved ? "*" : ""));
 
@@ -359,8 +353,8 @@ int main(int, char**)
             draw_filebrowser("NEW", file, write, is_clicked_NEW);
             if(write)
             {
-                strcpy(filename, file.c_str());
-                if(creat(filename, 0644) == -1)
+                filename = file;
+                if(creat(filename.c_str(), 0644) == -1)
                 {
                     std::cerr << "Failed to create file\n";
                     exit(1);
@@ -384,7 +378,7 @@ int main(int, char**)
             draw_filebrowser("OPEN", file, write, is_clicked_OPEN); //  editor_util/editor_util.hpp
             if(write && fs::is_regular_file(file))
             {
-                strcpy(filename, file.c_str());
+                filename = file;
                 std::ifstream in_file(filename);
                 std::string _str;
 
@@ -420,9 +414,9 @@ int main(int, char**)
             file = fs::canonical(file);
             if(!unsaved) //IGNORE SAVE EVENT
             {}
-            else if(strcmp(filename, "") != 0)
+            else if(!filename.empty())
             {
-               save(filename, buffer);
+               save(filename.c_str(), buffer);
                bt_Save = false;
                unsaved = false; 
             }
@@ -434,20 +428,20 @@ int main(int, char**)
                 {
                     if(!fs::exists(file))
                     {
-                        strcpy(filename, file.c_str());
-                        if(creat(filename, 0644) == -1)
+                        filename = file;
+                        if(creat(filename.c_str(), 0644) == -1)
                         {
                             std::cerr << "Failed to create file\n";
                             exit(1);
                         }
-                        save(filename, buffer);
+                        save(filename.c_str(), buffer);
                         unsaved = false;
                         write = false;
                     }
                     else if(fs::is_empty(file))
                     {
-                        strcpy(filename, file.c_str());
-                        save(filename, buffer);
+                        filename = file;
+                        save(filename.c_str(), buffer);
                         unsaved = false;
                         write = false;
                     }
@@ -471,8 +465,8 @@ int main(int, char**)
                 {
                     save_prompt = false;
                     bt_Save = false;
-                    strcpy(filename, file.c_str());
-                    save(filename, buffer);
+                    filename = file;
+                    save(filename.c_str(), buffer);
                     file = ".";
                     unsaved = false;
                     write = false;
