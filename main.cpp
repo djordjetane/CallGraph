@@ -156,22 +156,22 @@ int main(int, char**)
     io.Fonts->AddFontFromFileTTF("imgui_util/misc/fonts/Cousine-Regular.ttf", 15.0f);
 
     // Our state
-    static bool is_clicked_NEW = false;
-    static bool is_clicked_OPEN = false;
-    static bool bt_Save = false;
-    static bool key_event_new = false;
-    static bool key_event_open = false;
-    static bool key_event_save = false;
-    static bool unsaved = true;
+    bool is_clicked_NEW = false;
+    bool is_clicked_OPEN = false;
+    bool bt_Save = false;
+    bool key_event_new = false;
+    bool key_event_open = false;
+    bool key_event_save = false;
+    bool unsaved = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    static char filename[255];
+    char filename[255];
     strcpy(filename, "");
 
     TextEditor editor;
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
 
-    static std::string buffer;
+    std::string buffer;
 
     clang_interface::ASTUnit abstract_syntax_tree;
     clang_interface::CallGraph call_graph;
