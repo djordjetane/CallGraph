@@ -25,15 +25,13 @@ namespace GraphGui {
 static float scroll_x = 0;
 static float scroll_y = 0;
 const static float SCROLL_SPEED = 10;
-const static float NODE_MIN_SIZE_Y = 30;
+const static float NODE_MIN_SIZE_Y = 60;
 const static float NODE_MIN_SIZE_X = NODE_MIN_SIZE_Y;
 
 // focus value
 static bool refresh_nodes = false;
 
 static ImVec2 current_node_size(NODE_MIN_SIZE_X, NODE_MIN_SIZE_Y);
-
-
 
 struct Node {
     ImVec2 position;
@@ -65,6 +63,7 @@ struct Node {
 
 // Last clicked node
 static Node* last_clicked_node = nullptr;
+static Node* hovered_node = nullptr;
 
 class GraphGui {
 private:
@@ -98,6 +97,7 @@ public:
     void key_input_check();
     
     void focus_node(const std::string& node_signature);
+    void draw_node_info_window();
 };
 
 } // namespace GraphGui

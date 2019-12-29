@@ -45,11 +45,6 @@ void Node::hide_neighbours()
     }
 }
 
-void Node::show_info()
-{
-    ImGui::Text("%s", function->NameAsString().c_str());
-}
-
 void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickness)
 {
     if(number_of_active_parents == 0)
@@ -78,6 +73,9 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
 
     bool is_clicked = ImGui::IsMouseClicked(0);
     bool is_hovering = ImGui::IsWindowHovered();
+
+    if(is_hovering)
+        hovered_node = this;
 
     if(is_clicked && is_hovering)
         last_clicked_node = this;
@@ -139,6 +137,7 @@ void GraphGui::set_window(ImGuiWindow* new_window)
 
 void GraphGui::draw()
 {
+    hovered_node = nullptr;
     key_input_check();
     layers.clear();
     layers.resize(nodes.size(), 0);
@@ -156,6 +155,7 @@ void GraphGui::draw()
     if(refresh_nodes)
         refresh();
 
+    draw_node_info_window();
 }
 
 void GraphGui::calculate_depth(Node* node) 
@@ -325,6 +325,32 @@ void GraphGui::BuildCallgraphFromSource(std::string source)
     nodes.at(0)->number_of_active_parents = 1;
 
     calculate_depth(nodes.front().get());
+}
+
+void Node::show_info()
+{
+    ImGui::Text("Name: %s", function->NameAsString().c_str());
+    ImGui::Text("ID: %u", function->ID());
+    ImGui::Text("ReturnType: %s", function->ReturnTypeAsString().c_str());
+    ImGui::Text("Function parameters: ");
+    for(auto it=function->ParamBegin(); it!=function->ParamEnd(); it++)
+        ImGui::Text("\t%s %s", (*it)->getOriginalType().getAsString().c_str(), (*it)->getNameAsString().c_str());
+    if(function->ParamBegin() == function->ParamEnd())
+        ImGui::Text("\tNone");
+}
+
+void GraphGui::draw_node_info_window()
+{
+    // PROTOTYPE
+    ImVec2 size = ImVec2(250, 200);
+    ImGui::SetNextWindowPos(ImVec2(window->Pos.x + window->Size.x - size.x - 5, 
+                                   window->Pos.y + window->Size.y - size.y - 5));
+    ImGui::BeginChild((char *)"test", size, true);
+        if(hovered_node != nullptr)
+        {
+            hovered_node->show_info();
+        }
+    ImGui::End();
 }
 
 } // namespace GraphGui
