@@ -341,16 +341,22 @@ void Node::show_info()
 
 void GraphGui::draw_node_info_window()
 {
-    // PROTOTYPE
+    if(hovered_node == nullptr)
+        return;
+
     ImVec2 size = ImVec2(250, 200);
-    ImGui::SetNextWindowPos(ImVec2(window->Pos.x + window->Size.x - size.x - 5, 
-                                   window->Pos.y + window->Size.y - size.y - 5));
+    ImVec2 pos = ImVec2(window->Pos.x + window->Size.x - size.x - 5, 
+                        window->Pos.y + window->Size.y - size.y - 5);
+
+    if(io_pointer->MousePos.x >= pos.x && io_pointer->MousePos.y >= pos.y)
+        pos = ImVec2(pos.x, window->Pos.y + 25);
+
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::SetNextWindowPos(pos);
     ImGui::BeginChild((char *)"test", size, true);
-        if(hovered_node != nullptr)
-        {
-            hovered_node->show_info();
-        }
+        hovered_node->show_info();
     ImGui::End();
+    ImGui::PopStyleColor();
 }
 
 } // namespace GraphGui
