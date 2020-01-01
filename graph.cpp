@@ -3,6 +3,9 @@
 #include<set>
 namespace GraphGui {
 
+
+
+
 Node::Node()
 {
     init();
@@ -137,6 +140,10 @@ void GraphGui::set_window(ImGuiWindow* new_window)
 
 void GraphGui::draw()
 {
+    ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+    set_window(ImGui::GetCurrentWindow());
+
     hovered_node = nullptr;
     key_input_check();
     layers.clear();
@@ -156,6 +163,8 @@ void GraphGui::draw()
         refresh();
 
     draw_node_info_window();
+    ImGui::End();
+    ImGui::PopClipRect();
 }
 
 void GraphGui::calculate_depth(Node* node) 

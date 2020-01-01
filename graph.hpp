@@ -66,6 +66,7 @@ static Node* last_clicked_node = nullptr;
 static Node* hovered_node = nullptr;
 
 class GraphGui {
+
 private:
     ImGuiWindow* window;
     std::vector<std::unique_ptr<Node>> nodes;
@@ -84,9 +85,12 @@ private:
     clang_interface::ASTUnit abstract_syntax_tree;
     clang_interface::CallGraph call_graph;
 
+
 public:
     GraphGui(ImGuiIO* io, TextEditor *editor)
-        : io_pointer(io), editor_pointer(editor) {}
+        : io_pointer(io)
+        , editor_pointer(editor)
+    {}
 
     void BuildCallgraphFromSource(std::string);
 

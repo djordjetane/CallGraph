@@ -52,7 +52,6 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-const static float EDITOR_GRAPH_RATIO = 0.40;
 
 //GraphGui::GraphGui graph(nullptr);
 
@@ -61,6 +60,7 @@ class MainWindow {
     const char* glsl_version;
     GLFWwindow* window;
     bool err;
+
 public:
     GLFWwindow* Window()
     {
@@ -182,7 +182,7 @@ public:
     {
         return buffer;
     }
-    void Update() {
+    void Draw() {
         //*******************
         // KEY EVENTS
         //*******************
@@ -213,20 +213,11 @@ public:
         {
             glfwSetWindowShouldClose(main_window.Window(), GLFW_TRUE);
         }
-
-    }
-
-    void Draw() {
-
         //*******************
         //SOURCE CODE WINDOW
         //*******************
-        float editor_size_x = io.DisplaySize.x*EDITOR_GRAPH_RATIO;
-        float editor_size_y = io.DisplaySize.y-20;
         {
-            ImGui::SetNextWindowPos(ImVec2(15, 10), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(editor_size_x, editor_size_y), ImGuiCond_FirstUseEver);
-            //ImGui::SetNextWindowFocus();
+
             ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
 
             if(ImGui::BeginMenuBar())
@@ -305,7 +296,7 @@ public:
         //*******************
         //NEW BUTTON WINDOW
         //*******************
-        is_clicked_NEW |= key_event_new;
+        //is_clicked_NEW |= key_event_new;
         if(is_clicked_NEW)
         {
             key_event_new = false;
@@ -452,8 +443,45 @@ public:
     }
 };
 
+class WindowsToggleMenu {
+private:
+    bool show_source_code_window = true;
+    bool show_callgraph_window = true;
+    bool show_ast_dump_window = false;
+    bool show_function_list_window = false;
+
+public:
+    void Draw() {
+        ImGui::Begin("Windows toggle menu", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+        ImGui::Checkbox("Source code", &show_source_code_window); ImGui::SameLine(150);
+        ImGui::Checkbox("Callgraph", &show_callgraph_window); ImGui::SameLine(300);
+        ImGui::Checkbox("AST dump", &show_ast_dump_window); ImGui::SameLine(450);
+        ImGui::Checkbox("Function list", &show_function_list_window); ImGui::SameLine(600);
+
+        ImGui::End();
+    }
+    bool ShowSourceCodeWindow() const
+    {
+        return show_source_code_window;
+    }
+
+    bool ShowCallGraphWindow() const
+    {
+        return show_callgraph_window;
+    }
+    bool ShowAstDumpWindow() const
+    {
+        return show_ast_dump_window;
+    }
+    bool ShowFunctionListWindow() const
+    {
+        return show_function_list_window;
+    }
+
 };
 
+};
 
 
 int main(int, char**)
@@ -466,6 +494,7 @@ int main(int, char**)
 
     gui::SourceCodePanel source_code_panel(io, main_window);
     GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
+    gui::WindowsToggleMenu windows_toggle_menu;
 
     while (!glfwWindowShouldClose(main_window.Window()))
     {
@@ -478,29 +507,15 @@ int main(int, char**)
 
         ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
 
-        source_code_panel.Update();
 
-        float graph_size_x = io.DisplaySize.x*(1 - EDITOR_GRAPH_RATIO)-30;
-        float graph_size_y = io.DisplaySize.y-20;
-        float editor_size_x = io.DisplaySize.x*EDITOR_GRAPH_RATIO;
-        float editor_size_y = io.DisplaySize.y-20;
 
         //*******************
         //GENERATED GRAPH WINDOW
         //*******************
+        if(windows_toggle_menu.ShowCallGraphWindow())
         {
-            ImGui::SetNextWindowPos(ImVec2(editor_size_x+25, 10), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(graph_size_x, graph_size_y), ImGuiCond_FirstUseEver);
-            ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-
-            graph.set_window(ImGui::GetCurrentWindow());
-            //PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
             graph.draw();
-            //graph.focus_node(std::string("base::base()"));
-
-            ImGui::End();
-            ImGui::PopClipRect();
         }
 
         if(io.KeyShift && io.KeyCtrl && io.KeysDown['F'])
@@ -515,7 +530,10 @@ int main(int, char**)
             source_code_panel.CallGraphBuilt();
         }
 
-        source_code_panel.Draw();
+        windows_toggle_menu.Draw();
+
+        if(windows_toggle_menu.ShowSourceCodeWindow())
+            source_code_panel.Draw();
 
 
         // Rendering
