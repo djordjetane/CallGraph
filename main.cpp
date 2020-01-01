@@ -481,6 +481,7 @@ public:
 
 };
 
+
 };
 
 
@@ -495,7 +496,8 @@ int main(int, char**)
     gui::SourceCodePanel source_code_panel(io, main_window);
     GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
     gui::WindowsToggleMenu windows_toggle_menu;
-
+    clang_interface::ASTUnit ast_unit;
+    clang_interface::CallGraph call_graph;
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();
@@ -526,7 +528,10 @@ int main(int, char**)
 
         if(source_code_panel.SecondsSinceLastTextChange() == 2 && source_code_panel.ShouldBuildCallgraph())
         {
-            graph.BuildCallgraphFromSource(source_code_panel.SourceCode());
+            auto new_ast_unit = clang_interface::BuildASTFromSource(source_code_panel.SourceCode());
+            call_graph = clang_interface::ExtractCallGraphFromAST(new_ast_unit);
+            ast_unit = std::move(new_ast_unit);
+            graph.BuildCallGraph(call_graph);
             source_code_panel.CallGraphBuilt();
         }
 

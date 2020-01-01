@@ -282,10 +282,8 @@ void GraphGui::focus_node(const std::string& node_signature)
         }
 }
 
-void GraphGui::BuildCallgraphFromSource(std::string source)
+void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
 {
-    abstract_syntax_tree = clang_interface::BuildASTFromSource(std::move(source));
-    call_graph = clang_interface::ExtractCallGraphFromAST(abstract_syntax_tree);
     int index = 0;
     int main_function_index = 0;
     nodes.clear();

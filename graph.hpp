@@ -82,18 +82,13 @@ private:
     int node_line_thickness = 5;
     ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
 
-    clang_interface::ASTUnit abstract_syntax_tree;
-    clang_interface::CallGraph call_graph;
-
 
 public:
     GraphGui(ImGuiIO* io, TextEditor *editor)
         : io_pointer(io)
         , editor_pointer(editor)
     {}
-
-    void BuildCallgraphFromSource(std::string);
-
+    void BuildCallGraph(clang_interface::CallGraph& call_graph);
     void set_window(ImGuiWindow* new_window);
     void draw();
     void calculate_depth(Node* node);
