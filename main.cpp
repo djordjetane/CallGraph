@@ -92,7 +92,11 @@ public:
     #endif
 
         // Create window with graphics context
-        window = glfwCreateWindow(1280, 720, "CallGraph", NULL, NULL);
+
+        auto monitor = glfwGetPrimaryMonitor();
+        auto mode = glfwGetVideoMode(monitor);
+
+        window = glfwCreateWindow(mode->width, mode->height, "CallGraph", NULL, NULL);
         if (window == NULL)
         {
             exit(EXIT_FAILURE);
@@ -156,9 +160,9 @@ class SourceCodePanel {
     bool key_event_save = false;
     bool unsaved = true;
     bool should_build_callgraph = false;
-
+    bool *show_source_code_window;
 public:
-    SourceCodePanel(ImGuiIO& io, MainWindow& main_window) : io(io), main_window(main_window) {
+    SourceCodePanel(ImGuiIO& io, MainWindow& main_window, bool *p_open) : io(io), main_window(main_window), show_source_code_window(p_open) {
         editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
     }
     TextEditor& Editor() { return editor; }
@@ -218,7 +222,11 @@ public:
         //*******************
         {
 
-            ImGui::Begin("SOURCE CODE", __null, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
+            if(!ImGui::Begin("SOURCE CODE", show_source_code_window, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse))
+            {
+                ImGui::End();
+                return;
+            }
 
             if(ImGui::BeginMenuBar())
             {
@@ -445,42 +453,61 @@ public:
 
 class WindowsToggleMenu {
 private:
+
+
+public:
     bool show_source_code_window = true;
     bool show_callgraph_window = true;
     bool show_ast_dump_window = false;
     bool show_function_list_window = false;
 
-public:
     void Draw() {
         ImGui::Begin("Windows toggle menu", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
-
         ImGui::Checkbox("Source code", &show_source_code_window); ImGui::SameLine(150);
         ImGui::Checkbox("Callgraph", &show_callgraph_window); ImGui::SameLine(300);
         ImGui::Checkbox("AST dump", &show_ast_dump_window); ImGui::SameLine(450);
         ImGui::Checkbox("Function list", &show_function_list_window); ImGui::SameLine(600);
 
         ImGui::End();
-    }
-    bool ShowSourceCodeWindow() const
-    {
-        return show_source_code_window;
-    }
 
-    bool ShowCallGraphWindow() const
-    {
-        return show_callgraph_window;
-    }
-    bool ShowAstDumpWindow() const
-    {
-        return show_ast_dump_window;
-    }
-    bool ShowFunctionListWindow() const
-    {
-        return show_function_list_window;
+
+
     }
 
 };
 
+class FunctionListFilteringWindow {
+private:
+    ImGuiTextFilter filter;
+    const clang_interface::CallGraph::NodesList* functions{nullptr};
+public:
+    void SetFunctionsList(const clang_interface::CallGraph::NodesList* func)
+    {
+        functions = func;
+    }
+    void Draw() {
+        ImGui::Begin("Functions Filtering List");
+
+        ImGui::Text("Filter usage:\n"
+                    "  \"\"         display all lines\n"
+                    "  \"xxx\"      display lines containing \"xxx\"\n"
+                    "  \"xxx,yyy\"  display lines containing \"xxx\" or \"yyy\"\n"
+                    "  \"-xxx\"     hide lines containing \"xxx\"");
+        filter.Draw();
+
+        if(functions) {
+            for(const auto& function : *functions) {
+                if(filter.PassFilter(function->NameAsString().c_str())) {
+                    ImGui::BulletText(function->NameAsString().c_str());
+                }
+            }
+        }
+
+
+
+        ImGui::End();
+    }
+};
 
 };
 
@@ -493,11 +520,14 @@ int main(int, char**)
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    gui::SourceCodePanel source_code_panel(io, main_window);
-    GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
     gui::WindowsToggleMenu windows_toggle_menu;
+
+    gui::SourceCodePanel source_code_panel(io, main_window, &windows_toggle_menu.show_source_code_window);
+    GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
+
     clang_interface::ASTUnit ast_unit;
     clang_interface::CallGraph call_graph;
+    gui::FunctionListFilteringWindow functions_filtering_window;
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();
@@ -509,22 +539,12 @@ int main(int, char**)
 
         ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
 
-
-
-        //*******************
-        //GENERATED GRAPH WINDOW
-        //*******************
-        if(windows_toggle_menu.ShowCallGraphWindow())
-        {
-
-            graph.draw();
-        }
+        windows_toggle_menu.Draw();
 
         if(io.KeyShift && io.KeyCtrl && io.KeysDown['F'])
         {
             graph.focus_node(source_code_panel.Editor().GetSelectedText());
         }
-
 
         if(source_code_panel.SecondsSinceLastTextChange() == 2 && source_code_panel.ShouldBuildCallgraph())
         {
@@ -533,13 +553,21 @@ int main(int, char**)
             ast_unit = std::move(new_ast_unit);
             graph.BuildCallGraph(call_graph);
             source_code_panel.CallGraphBuilt();
+            functions_filtering_window.SetFunctionsList(&call_graph.nodes);
         }
 
-        windows_toggle_menu.Draw();
-
-        if(windows_toggle_menu.ShowSourceCodeWindow())
+        //if(windows_toggle_menu.show_source_code_window) {
             source_code_panel.Draw();
+        //}
 
+
+        if(windows_toggle_menu.show_callgraph_window) {
+            graph.draw();
+        }
+
+        if(windows_toggle_menu.show_function_list_window) {
+            functions_filtering_window.Draw();
+        }
 
         // Rendering
         ImGui::Render();
