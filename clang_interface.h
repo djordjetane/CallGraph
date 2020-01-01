@@ -74,10 +74,17 @@ private:
     const clang::FunctionDecl* decl {nullptr};
     std::string name;
     std::string return_type;
+    std::vector<ParamVarDecl> params;
 public:
     FunctionDecl() = default;
     explicit FunctionDecl(const clang::FunctionDecl* arg)
-        : decl(arg), name(arg->getNameAsString()), return_type(arg->getReturnType().getAsString()) {}
+        : decl(arg), name(arg->getNameAsString()), return_type(arg->getReturnType().getAsString()) {
+        unsigned i = 0;
+        for(auto param = arg->param_begin(); param != arg->param_end(); ++param)
+        {
+            params.emplace_back(*param, ++i);
+        }
+    }
     unsigned ID() const
     {
         return decl->getID();
@@ -93,11 +100,16 @@ public:
 
     auto ParamBegin() const
     {
-        return decl->param_begin();
+        return params.begin();
     }
     auto ParamEnd() const
     {
-        return decl->param_end();
+        return params.end();
+    }
+
+    bool HasParams() const
+    {
+        return ParamBegin() != ParamEnd();
     }
     bool IsMain() const
     {

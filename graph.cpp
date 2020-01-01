@@ -341,7 +341,7 @@ void Node::show_info()
     ImGui::Text("ReturnType: %s", function->ReturnTypeAsString().c_str());
     ImGui::Text("Function parameters: ");
     for(auto it=function->ParamBegin(); it!=function->ParamEnd(); it++)
-        ImGui::Text("\t%s %s", (*it)->getOriginalType().getAsString().c_str(), (*it)->getNameAsString().c_str());
+        ImGui::Text("\t%s %s", it->TypeAsString().c_str(), it->NameAsString().c_str());
     if(function->ParamBegin() == function->ParamEnd())
         ImGui::Text("\tNone");
 }

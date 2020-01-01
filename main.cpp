@@ -486,7 +486,7 @@ public:
         functions = func;
     }
     void Draw() {
-        ImGui::Begin("Functions Filtering List");
+        ImGui::Begin("Functions Filtering List", __null, ImGuiWindowFlags_NoCollapse);
 
         ImGui::Text("Filter usage:\n"
                     "  \"\"         display all lines\n"
@@ -498,12 +498,25 @@ public:
         if(functions) {
             for(const auto& function : *functions) {
                 if(filter.PassFilter(function->NameAsString().c_str())) {
-                    ImGui::BulletText(function->NameAsString().c_str());
+                    if(ImGui::TreeNode(function->NameAsString().c_str()))
+                    {
+                        ImGui::Text("Return type: %s", function->ReturnTypeAsString().c_str());
+
+                        if(function->HasParams()) {
+                            ImGui::Text("Params: ");
+                            for(auto param = function->ParamBegin(); param != function->ParamEnd(); ++param)
+                            {
+                                ImGui::Text("\t%s %s", param->TypeAsString().c_str(), param->NameAsString().c_str());
+                            }
+
+                        } else {
+                            ImGui::Text("Params: None");
+                        }
+                        ImGui::TreePop();
+                    }
                 }
             }
         }
-
-
 
         ImGui::End();
     }
