@@ -4,7 +4,7 @@
 #include<vector>
 #include<string>
 #include<memory>
-
+#include<iostream>
 #include "clang/AST/AST.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/ASTContext.h"
@@ -12,6 +12,7 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Tooling/Tooling.h"
 
+#include "llvm/Support/raw_ostream.h"
 
 #define DUMP(out, x) out << #x << ' ' << x << '\n'
 
@@ -75,6 +76,7 @@ private:
     std::string name;
     std::string return_type;
     std::vector<ParamVarDecl> params;
+    std::string ast_dump;
 public:
     FunctionDecl() = default;
     explicit FunctionDecl(const clang::FunctionDecl* arg)
@@ -84,6 +86,12 @@ public:
         {
             params.emplace_back(*param, ++i);
         }
+        llvm::raw_string_ostream out(ast_dump);
+
+        std::cerr << "ASDASDASDASD";
+        arg->dump(out);
+        std::cerr << out.str();;
+        std::cerr << ast_dump;
     }
     unsigned ID() const
     {
