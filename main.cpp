@@ -480,7 +480,12 @@ class FunctionListFilteringWindow {
 private:
     ImGuiTextFilter filter;
     const clang_interface::CallGraph::NodesList* functions{nullptr};
+    clang_interface::FunctionDecl* last_cliked{nullptr};
 public:
+    clang_interface::FunctionDecl* LastClikedFunction() const
+    {
+        return last_cliked;
+    }
     void SetFunctionsList(const clang_interface::CallGraph::NodesList* func)
     {
         functions = func;
@@ -501,7 +506,7 @@ public:
                     if(ImGui::TreeNode(function->NameAsString().c_str()))
                     {
                         ImGui::Text("Return type: %s", function->ReturnTypeAsString().c_str());
-
+                        last_cliked = function.get();
                         if(function->HasParams()) {
                             ImGui::Text("Params: ");
                             for(auto param = function->ParamBegin(); param != function->ParamEnd(); ++param)
@@ -518,6 +523,24 @@ public:
             }
         }
 
+        ImGui::End();
+    }
+};
+
+class FunctionASTDumpWindow {
+private:
+    clang_interface::FunctionDecl* function{nullptr};
+public:
+    void SetFunction(clang_interface::FunctionDecl* func)
+    {
+        function = func;
+    }
+    void Draw() {
+        ImGui::Begin("Function AST Dump", __null, ImGuiWindowFlags_HorizontalScrollbar);
+        if(function)
+        {
+            ImGui::Text("%s", function->ASTDump().c_str());
+        }
         ImGui::End();
     }
 };
@@ -541,6 +564,7 @@ int main(int, char**)
     clang_interface::ASTUnit ast_unit;
     clang_interface::CallGraph call_graph;
     gui::FunctionListFilteringWindow functions_filtering_window;
+    gui::FunctionASTDumpWindow function_ast_dump_window;
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();
@@ -569,9 +593,9 @@ int main(int, char**)
             functions_filtering_window.SetFunctionsList(&call_graph.nodes);
         }
 
-        //if(windows_toggle_menu.show_source_code_window) {
+        if(windows_toggle_menu.show_source_code_window) {
             source_code_panel.Draw();
-        //}
+        }
 
 
         if(windows_toggle_menu.show_callgraph_window) {
@@ -580,8 +604,13 @@ int main(int, char**)
 
         if(windows_toggle_menu.show_function_list_window) {
             functions_filtering_window.Draw();
+            function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
         }
 
+        if(windows_toggle_menu.show_ast_dump_window) {
+            function_ast_dump_window.Draw();
+
+        }
         // Rendering
         ImGui::Render();
         int display_w, display_h;

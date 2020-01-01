@@ -93,6 +93,10 @@ public:
         std::cerr << out.str();;
         std::cerr << ast_dump;
     }
+    const std::string& ASTDump() const
+    {
+        return ast_dump;
+    }
     unsigned ID() const
     {
         return decl->getID();
