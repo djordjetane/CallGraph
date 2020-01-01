@@ -503,10 +503,12 @@ public:
         if(functions) {
             for(const auto& function : *functions) {
                 if(filter.PassFilter(function->NameAsString().c_str())) {
-                    if(ImGui::TreeNode(function->NameAsString().c_str()))
+                    bool open = ImGui::TreeNode(function->NameAsString().c_str());
+                    bool clicked = ImGui::IsItemClicked();
+
+                    if(open)
                     {
                         ImGui::Text("Return type: %s", function->ReturnTypeAsString().c_str());
-                        last_cliked = function.get();
                         if(function->HasParams()) {
                             ImGui::Text("Params: ");
                             for(auto param = function->ParamBegin(); param != function->ParamEnd(); ++param)
@@ -518,6 +520,10 @@ public:
                             ImGui::Text("Params: None");
                         }
                         ImGui::TreePop();
+                    }
+                    if(!open && clicked)
+                    {
+                        last_cliked = function.get();
                     }
                 }
             }
@@ -574,7 +580,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
+
 
         windows_toggle_menu.Draw();
 
@@ -604,12 +610,12 @@ int main(int, char**)
 
         if(windows_toggle_menu.show_function_list_window) {
             functions_filtering_window.Draw();
-            function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
+
         }
 
         if(windows_toggle_menu.show_ast_dump_window) {
             function_ast_dump_window.Draw();
-
+            function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
         }
         // Rendering
         ImGui::Render();

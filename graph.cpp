@@ -140,6 +140,7 @@ void GraphGui::set_window(ImGuiWindow* new_window)
 
 void GraphGui::draw()
 {
+            ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
     ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     set_window(ImGui::GetCurrentWindow());
