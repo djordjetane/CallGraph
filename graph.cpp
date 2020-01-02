@@ -297,7 +297,11 @@ void GraphGui::graph_init()
     layers.resize(nodes.size(), 0);
 
     for(const auto& e : nodes)
+    {
+        if(e == nullptr)
+            continue;
         e->number_of_active_parents = 0;
+    }
 
     if(root == nullptr)
         root = nodes.front().get();
