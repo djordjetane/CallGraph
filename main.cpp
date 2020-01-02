@@ -621,7 +621,7 @@ int main(int, char**)
         }
 
         if(windows_toggle_menu.show_ast_dump_window) {
-            function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
+            function_ast_dump_window.SetFunction(functions_filtering_window.LastClickedFunction());
             function_ast_dump_window.Draw();
         }
 
