@@ -157,11 +157,10 @@ void GraphGui::draw(clang_interface::FunctionDecl* function)
         layers.at(node->depth)++;
     }
 
-    //std::cout << ((root == nullptr) ? "NULL" : root->function->NameAsString()) << std::endl;
     for(auto& node: nodes)
     {
-        if(node->function == function)
-        {                                       
+        if(node->function == function && root != node.get())
+        {                                      
             root = node.get();
             graph_init();
         }
@@ -305,6 +304,9 @@ void GraphGui::graph_init()
 
     root->number_of_active_parents = 1;
     calculate_depth(root);
+    sort(nodes.begin(), nodes.end(), [](std::unique_ptr<Node>& a, std::unique_ptr<Node>& b){
+        return a->number_of_active_parents > b->number_of_active_parents;
+    });
 }
 
 void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
