@@ -461,8 +461,6 @@ public:
 
 class WindowsToggleMenu {
 private:
-
-
 public:
     bool show_source_code_window = true;
     bool show_callgraph_window = true;
@@ -477,9 +475,6 @@ public:
         ImGui::Checkbox("Function list", &show_function_list_window); ImGui::SameLine(600);
 
         ImGui::End();
-
-
-
     }
 
 };
@@ -497,6 +492,7 @@ public:
     void SetFunctionsList(const clang_interface::CallGraph::NodesList* func)
     {
         functions = func;
+        last_cliked = nullptr;
     }
     void Draw() {
         ImGui::Begin("Functions Filtering List", __null, ImGuiWindowFlags_NoCollapse);
@@ -549,11 +545,19 @@ public:
     {
         function = func;
     }
+    void Clear()
+    {
+        function = nullptr;
+    }
     void Draw() {
         ImGui::Begin("Function AST Dump", __null, ImGuiWindowFlags_HorizontalScrollbar);
         if(function)
         {
             ImGui::Text("%s", function->ASTDump().c_str());
+        }
+        else
+        {
+            ImGui::Text("None");
         }
         ImGui::End();
     }
@@ -588,8 +592,6 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
-
         windows_toggle_menu.Draw();
 
         if(io.KeyShift && io.KeyCtrl && io.KeysDown['F'])
@@ -599,12 +601,14 @@ int main(int, char**)
 
         if(source_code_panel.SecondsSinceLastTextChange() == 2 && source_code_panel.ShouldBuildCallgraph())
         {
+            function_ast_dump_window.Clear();
             auto new_ast_unit = clang_interface::BuildASTFromSource(source_code_panel.SourceCode());
             call_graph = clang_interface::ExtractCallGraphFromAST(new_ast_unit);
             ast_unit = std::move(new_ast_unit);
             graph.BuildCallGraph(call_graph);
             source_code_panel.CallGraphBuilt();
             functions_filtering_window.SetFunctionsList(&call_graph.nodes);
+
         }
 
         if(windows_toggle_menu.show_source_code_window) {
@@ -618,12 +622,11 @@ int main(int, char**)
 
         if(windows_toggle_menu.show_function_list_window) {
             functions_filtering_window.Draw();
-
         }
 
         if(windows_toggle_menu.show_ast_dump_window) {
-            function_ast_dump_window.Draw();
             function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
+            function_ast_dump_window.Draw();
         }
         // Rendering
         ImGui::Render();
