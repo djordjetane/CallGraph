@@ -295,7 +295,9 @@ void GraphGui::graph_init()
 {
     layers.clear();
     layers.resize(nodes.size(), 0);
-
+    last_clicked_node = nullptr;
+    hovered_node = nullptr;
+    root = nullptr;
     for(const auto& e : nodes)
     {
         if(e == nullptr)
