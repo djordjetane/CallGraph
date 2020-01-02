@@ -490,7 +490,7 @@ private:
     const clang_interface::CallGraph::NodesList* functions{nullptr};
     clang_interface::FunctionDecl* last_cliked{nullptr};
 public:
-    clang_interface::FunctionDecl* LastClikedFunction() const
+    clang_interface::FunctionDecl* LastClickedFunction() const
     {
         return last_cliked;
     }
@@ -573,12 +573,13 @@ int main(int, char**)
     gui::WindowsToggleMenu windows_toggle_menu;
 
     gui::SourceCodePanel source_code_panel(io, main_window, &windows_toggle_menu.show_source_code_window);
-    GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
 
     clang_interface::ASTUnit ast_unit;
     clang_interface::CallGraph call_graph;
     gui::FunctionListFilteringWindow functions_filtering_window;
     gui::FunctionASTDumpWindow function_ast_dump_window;
+
+    GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();
@@ -611,11 +612,6 @@ int main(int, char**)
             source_code_panel.Draw();
         }
 
-
-        if(windows_toggle_menu.show_callgraph_window) {
-            graph.draw();
-        }
-
         if(windows_toggle_menu.show_function_list_window) {
             functions_filtering_window.Draw();
 
@@ -623,7 +619,11 @@ int main(int, char**)
 
         if(windows_toggle_menu.show_ast_dump_window) {
             function_ast_dump_window.Draw();
-            function_ast_dump_window.SetFunction(functions_filtering_window.LastClikedFunction());
+            function_ast_dump_window.SetFunction(functions_filtering_window.LastClickedFunction());
+        }
+
+        if(windows_toggle_menu.show_callgraph_window) {
+            graph.draw(functions_filtering_window.LastClickedFunction());
         }
         // Rendering
         ImGui::Render();

@@ -64,6 +64,7 @@ struct Node {
 // Last clicked node
 static Node* last_clicked_node = nullptr;
 static Node* hovered_node = nullptr;
+static Node* root = nullptr;
 
 class GraphGui {
 
@@ -90,13 +91,14 @@ public:
     {}
     void BuildCallGraph(clang_interface::CallGraph& call_graph);
     void set_window(ImGuiWindow* new_window);
-    void draw();
+    void draw(clang_interface::FunctionDecl* function);
     void calculate_depth(Node* node);
     void refresh();
     void key_input_check();
     
     void focus_node(const std::string& node_signature);
     void draw_node_info_window();
+    void graph_init();
 };
 
 } // namespace GraphGui
