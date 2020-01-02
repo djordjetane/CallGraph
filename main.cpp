@@ -13,9 +13,6 @@
 #include <fstream>
 #include <cstring>
 #include <filesystem>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include "editor_util/editor_util.hpp"
 #include "editor_util/TextEditor.h"
 #include "graph.hpp"
@@ -316,11 +313,16 @@ public:
             if(write)
             {
                 filename = file;
-                if(creat(filename.c_str(), 0644) == -1)
+                std::ofstream output_stream(filename);                
+                if(!output_stream.is_open())
                 {
                     std::cerr << "Failed to create file\n";
                     exit(1);
                 }
+
+                output_stream << editor.GetText();
+
+                output_stream.close();
                 is_clicked_NEW = false;
                 write = false;
             }
@@ -371,7 +373,7 @@ public:
         if(bt_Save)
         {
             key_event_save = false;
-            // file = ".";
+            
             file = fs::canonical(file);
             if(!unsaved) //IGNORE SAVE EVENT
             {}
@@ -383,26 +385,32 @@ public:
             }
             else
             {
-                draw_filebrowser("SAVE", file, write, bt_Save);
-                    //draw_save(file, src_code_buffer, src_code_buffer.length, bt_Save); //  editor_util/editor_util.hpp
+                draw_filebrowser("SAVE", file, write, bt_Save);                    
                 if(write && (!fs::exists(file) || fs::is_regular_file(file)))
                 {
                     if(!fs::exists(file))
                     {
                         filename = file;
-                        if(creat(filename.c_str(), 0644) == -1)
+                        
+                        std::ofstream output_stream(filename);                
+                        if(!output_stream.is_open())
                         {
                             std::cerr << "Failed to create file\n";
                             exit(1);
-                        }
-                        save(filename.c_str(), buffer);
+                        }   
+
+                        output_stream << editor.GetText();
+                        
+                        //save(filename.c_str(), buffer);
+
+                        output_stream.close();
                         unsaved = false;
                         write = false;
                     }
                     else if(fs::is_empty(file))
                     {
                         filename = file;
-                        save(filename.c_str(), buffer);
+                        save(filename.c_str(), editor.GetText());
                         unsaved = false;
                         write = false;
                     }
@@ -427,7 +435,7 @@ public:
                     save_prompt = false;
                     bt_Save = false;
                     filename = file;
-                    save(filename.c_str(), buffer);
+                    save(filename.c_str(), editor.GetText());
                     file = ".";
                     unsaved = false;
                     write = false;
