@@ -138,9 +138,9 @@ void GraphGui::set_window(ImGuiWindow* new_window)
     window = new_window;
 }
 
-void GraphGui::draw()
+void GraphGui::draw(clang_interface::FunctionDecl* function)
 {
-            ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
+    ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
     ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     set_window(ImGui::GetCurrentWindow());
@@ -158,7 +158,15 @@ void GraphGui::draw()
     }
 
     for(auto& node: nodes)
+    {
+        if(node->function == function && root != node.get())
+        {                                      
+            root = node.get();
+            graph_init();
+        }
+
         node->draw(window, node_line_color, node_line_thickness);
+    }
 
     if(refresh_nodes)
         refresh();
@@ -265,7 +273,7 @@ void GraphGui::focus_node(const std::string& node_signature)
     for(const auto& e : nodes)
         if(e->function->NameAsString() == node_signature)
         {
-            if(e->number_of_active_parents == 0)
+            if(e->number_of_active_parents <= 0)
                 continue; 
                 
             int wx = window->Pos.x;
@@ -283,12 +291,33 @@ void GraphGui::focus_node(const std::string& node_signature)
         }
 }
 
+void GraphGui::graph_init()
+{
+    layers.clear();
+    layers.resize(nodes.size(), 0);
+
+    for(const auto& e : nodes)
+    {
+        if(e == nullptr)
+            continue;
+        e->number_of_active_parents = 0;
+    }
+
+    if(root == nullptr)
+        root = nodes.front().get();
+
+    root->number_of_active_parents = 1;
+    calculate_depth(root);
+    sort(nodes.begin(), nodes.end(), [](std::unique_ptr<Node>& a, std::unique_ptr<Node>& b){
+        return a->number_of_active_parents > b->number_of_active_parents;
+    });
+}
+
 void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
 {
     int index = 0;
     int main_function_index = 0;
     nodes.clear();
-    layers.clear();
     for(const auto& e : call_graph.nodes)
     {
         nodes.emplace_back(std::make_unique<Node>());
@@ -329,10 +358,7 @@ void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
     }
     std::cout << std::endl;
 
-    layers.resize(nodes.size(), 0);
-    nodes.at(0)->number_of_active_parents = 1;
-
-    calculate_depth(nodes.front().get());
+    graph_init();
 }
 
 void Node::show_info()
