@@ -16,6 +16,7 @@
 #include <utility>
 #include <algorithm>
 #include <queue>
+#include <cmath>
 #include "clang_interface.h"
 #include "editor_util/TextEditor.h"
 

@@ -485,7 +485,7 @@ private:
     const clang_interface::CallGraph::NodesList* functions{nullptr};
     clang_interface::FunctionDecl* last_cliked{nullptr};
 public:
-    clang_interface::FunctionDecl* LastClickedFunction() const
+    clang_interface::FunctionDecl* LastClikedFunction() const
     {
         return last_cliked;
     }
@@ -626,7 +626,7 @@ int main(int, char**)
         }
 
         if(windows_toggle_menu.show_callgraph_window) {
-            graph.draw(functions_filtering_window.LastClickedFunction());
+            graph.draw(functions_filtering_window.LastClikedFunction());
         }
         // Rendering
         ImGui::Render();

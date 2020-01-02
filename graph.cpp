@@ -5,7 +5,6 @@ namespace GraphGui {
 
 
 
-
 Node::Node()
 {
     init();
@@ -42,7 +41,8 @@ void Node::hide_neighbours()
     for(unsigned i=0; i<neighbors.size(); i++)
     {
         Node* neighbor = neighbors.at(i);
-        neighbor->number_of_active_parents--;
+        if(neighbor->number_of_active_parents > 0)
+            neighbor->number_of_active_parents--;
         if(neighbor->number_of_active_parents == 0 && neighbor->show_children)
             neighbor->hide_neighbours();
     }
@@ -295,15 +295,8 @@ void GraphGui::graph_init()
 {
     layers.clear();
     layers.resize(nodes.size(), 0);
-    last_clicked_node = nullptr;
-    hovered_node = nullptr;
-    root = nullptr;
     for(const auto& e : nodes)
-    {
-        if(e == nullptr)
-            continue;
         e->number_of_active_parents = 0;
-    }
 
     if(root == nullptr)
         root = nodes.front().get();
@@ -317,6 +310,9 @@ void GraphGui::graph_init()
 
 void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
 {
+    last_clicked_node = nullptr;
+    hovered_node = nullptr;
+    root = nullptr;
     int index = 0;
     int main_function_index = 0;
     nodes.clear();
