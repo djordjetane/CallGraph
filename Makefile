@@ -63,12 +63,12 @@ CLANGLIBS = \
 ##---------------------------------------------------------------------
 
 ## Using OpenGL loader: gl3w [default]
-SOURCES += imgui_util/glfw_opengl3/libs/gl3w/GL/gl3w.c
-CXXFLAGS += -Iimgui_util/glfw_opengl3/libs/gl3w
+#SOURCES += imgui_util/glfw_opengl3/libs/gl3w/GL/gl3w.c
+#CXXFLAGS += -Iimgui_util/glfw_opengl3/libs/gl3w
 
 ## Using OpenGL loader: glew
 ## (This assumes a system-wide installation)
-# CXXFLAGS += -lGLEW -DIMGUI_IMPL_OPENGL_LOADER_GLEW
+ CXXFLAGS += -lGLEW -DIMGUI_IMPL_OPENGL_LOADER_GLEW
 
 ## Using OpenGL loader: glad
 # SOURCES += ../libs/glad/src/glad.c
