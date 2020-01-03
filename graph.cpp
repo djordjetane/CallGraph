@@ -238,13 +238,18 @@ void GraphGui::key_input_check()
         && io_pointer->KeysDown['T'])
     {
         std::vector<std::string> buffer_lines = editor_pointer->GetTextLines();
-        long unsigned row = 0, col = 0; 
+        long unsigned row = 0, col = 0;
+        auto fun_len = last_clicked_node->function->NameAsString().length();
+
         for(auto begin = buffer_lines.begin(); begin != buffer_lines.end() && col == 0; begin++, row++)
         {
-            col = begin->find(last_clicked_node->function->NameAsString());
-            col = begin->find(last_clicked_node->function->NameAsString());
+            col = begin->find(last_clicked_node->function->NameAsString());            
             if(col == begin->npos)
                 col = 0;
+            else {                
+                if(buffer_lines[row][col + fun_len] != '(' && !isspace(buffer_lines[row][col + fun_len]))
+                    col = 0;    
+            }
         }
         row--;
 
