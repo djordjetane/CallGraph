@@ -12,7 +12,8 @@
 #
 
 #CXX = g++-8 -std=c++17
-CXX = clang++-8 -std=c++17
+CXX = clang++-8
+CC = clang-8
 
 EXE = SourceExplorer
 SOURCES = main.cpp editor_util/editor_util.cpp editor_util/TextEditor.cpp graph.cpp clang_interface.cpp
@@ -28,9 +29,11 @@ LLVMCONFIG := /usr/bin/llvm-config-8
 
 
 CXXFLAGS = -Iimgui_util/glfw_opengl3/ -Iimgui_util/ -I$(shell $(LLVMCONFIG) --src-root)/tools/clang/include -I$(shell $(LLVMCONFIG) --obj-root)/tools/clang/include $(shell $(LLVMCONFIG) --cxxflags) $(RTTIFLAG) -std=c++17
-CXXFLAGS += -lstdc++fs -g -Wall -Wformat 
+CXXFLAGS += -g -Wall -Wformat
 
-CLANGLIBS = \
+CFLAGS = -std=c99
+
+LIBS = \
 				-lclangTooling\
 				-lclangFrontendTool\
 				-lclangFrontend\
@@ -54,7 +57,9 @@ CLANGLIBS = \
 				-lclangASTMatchers\
 				$(shell $(LLVMCONFIG) --libs)\
 				$(shell $(LLVMCONFIG) --system-libs)\
-	-lcurses
+				-lcurses\
+				-lstdc++fs\
+				-lGLEW
 
 #LIBS =
 
@@ -68,7 +73,7 @@ CLANGLIBS = \
 
 ## Using OpenGL loader: glew
 ## (This assumes a system-wide installation)
- CXXFLAGS += -lGLEW -DIMGUI_IMPL_OPENGL_LOADER_GLEW
+CXXFLAGS += -DIMGUI_IMPL_OPENGL_LOADER_GLEW
 
 ## Using OpenGL loader: glad
 # SOURCES += ../libs/glad/src/glad.c
@@ -83,7 +88,7 @@ ifeq ($(UNAME_S), Linux) #LINUX
 	LIBS += -lGL -lGLEW `pkg-config --static --libs glfw3`
 
 	CXXFLAGS += `pkg-config --cflags glfw3`
-	CFLAGS = $(CXXFLAGS)
+#	CFLAGS = $(CXXFLAGS)
 endif
 
 ifeq ($(UNAME_S), Darwin) #APPLE
@@ -131,7 +136,7 @@ all: $(EXE)
 	@echo Build complete for $(ECHO_MESSAGE)
 
 $(EXE): $(OBJS)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS) $(CLANGLIBS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 
 .PHONY: clean
 
