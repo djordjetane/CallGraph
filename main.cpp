@@ -146,15 +146,12 @@ public:
 class SourceCodePanel {
     ImGuiIO &io;
     TextEditor editor;
-    MainWindow& main_window;
-    std::string buffer;
+    MainWindow& main_window;    
     std::string filename;
+    std::string restore_filename = "";
     bool is_clicked_NEW = false;
     bool is_clicked_OPEN = false;
-    bool bt_Save = false;
-    bool key_event_new = false;
-    bool key_event_open = false;
-    bool key_event_save = false;
+    bool bt_Save = false;        
     bool unsaved = true;
     bool should_build_callgraph = false;
     bool *show_source_code_window;
@@ -181,7 +178,7 @@ public:
     }
     const std::string SourceCode() const
     {
-        return buffer;
+        return editor.GetText();
     }
     void Draw() {
         //*******************
@@ -190,22 +187,25 @@ public:
         // NEW
         if(io.KeysDown['N'] && io.KeyCtrl)
         {
-            key_event_new = true;
+            is_clicked_NEW = true;
         }
         // OPEN
         if(io.KeysDown['O'] && io.KeyCtrl)
         {
-            key_event_open = true;
+            is_clicked_OPEN = true;
         }
         // SAVE
         if(io.KeysDown['S'] && io.KeyCtrl)
         {
-            key_event_save = true;
+            bt_Save = true;
         }
         // SAVE AS
         if(io.KeysDown['S'] && io.KeyShift && io.KeyCtrl)
         {
-            key_event_save = true;
+            bt_Save = true;
+            unsaved = true;
+            if(!filename.empty())
+                restore_filename = filename;
             filename.clear();
 
         }
@@ -244,7 +244,10 @@ public:
                     if(ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                     {
                         bt_Save = true;
-                        filename.clear();
+                        unsaved = true;
+                        if(!filename.empty())
+                            restore_filename = filename;
+                        filename.clear();                        
                     }
                     if(ImGui::MenuItem("Exit", "Ctrl+Q"))
                     {
@@ -285,26 +288,21 @@ public:
             auto position = filename.find_last_of('/');
             ImGui::Text("%s", filename.c_str() + (position == std::string::npos ? 0 : position + 1));
             ImGui::SameLine();
-            ImGui::Text("%s", (unsaved ? "*" : ""));
+            
+            if(!unsaved)
+                unsaved = editor.IsTextChanged();
 
-            size_t written = buffer.length(); // IF BUFFER HAS CHANGED VIA TEXT EDITOR
+            ImGui::Text("%s", (unsaved ? "*" : ""));            
 
-            editor.Render("Source Code Editor");
-            buffer = editor.GetText();
-
-            if(written != buffer.length())
-                unsaved = true;
-
+            editor.Render("Source Code Editor");                        
 
             ImGui::End();
         }
         //*******************
         //NEW BUTTON WINDOW
-        //*******************
-        //is_clicked_NEW |= key_event_new;
+        //*******************        
         if(is_clicked_NEW)
-        {
-            key_event_new = false;
+        {            
             static std::string file = ".";
             file = fs::canonical(file);
             static bool write = false;
@@ -330,11 +328,9 @@ public:
 
         //*******************
         //OPEN BUTTON WINDOW
-        //*******************
-        is_clicked_OPEN |= key_event_open;
+        //*******************        
         if(is_clicked_OPEN)
-        {
-            key_event_open = false;
+        {            
             static bool write = false;
             static std::string file = ".";
             file = fs::canonical(file).string();
@@ -346,13 +342,13 @@ public:
                 std::ifstream in_file(filename);
                 std::string _str;
 
-                buffer.clear();
+                std::string buffer = "";                
 
                 while(std::getline(in_file, _str))
-                {
+                {                    
                     buffer.append(_str);
                     buffer.append("\n");
-                }
+                }            
 
                 //graph.BuildCallgraphFromSource(buffer);
                 should_build_callgraph = true;
@@ -368,24 +364,21 @@ public:
         //*******************
         static bool save_prompt = false;
         static std::string file = ".";
-        static bool write = false;
-        bt_Save |= key_event_save;
+        static bool write = false;        
         if(bt_Save)
-        {
-            key_event_save = false;
-            
+        {                        
             file = fs::canonical(file);
             if(!unsaved) //IGNORE SAVE EVENT
             {}
             else if(!filename.empty())
             {
-               save(filename.c_str(), buffer);
+               save(filename.c_str(), editor.GetText());
                bt_Save = false;
                unsaved = false;
             }
             else
             {
-                draw_filebrowser("SAVE", file, write, bt_Save);                    
+                draw_filebrowser("SAVE", file, write, bt_Save);                
                 if(write && (!fs::exists(file) || fs::is_regular_file(file)))
                 {
                     if(!fs::exists(file))
@@ -399,9 +392,9 @@ public:
                             exit(1);
                         }   
 
-                        output_stream << editor.GetText();
+                        //output_stream << editor.GetText();
                         
-                        //save(filename.c_str(), buffer);
+                        save(filename.c_str(), editor.GetText());
 
                         output_stream.close();
                         unsaved = false;
@@ -417,8 +410,10 @@ public:
                     else
                     {
                         save_prompt = true;
-                    }
+                    }                    
                 }
+                if(!bt_Save && filename == "")
+                    filename = restore_filename;            
             }
         }
 
