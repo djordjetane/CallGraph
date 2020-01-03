@@ -17,7 +17,7 @@ CXX = clang++-8 -std=c++17
 EXE = SourceExplorer
 SOURCES = main.cpp editor_util/editor_util.cpp editor_util/TextEditor.cpp graph.cpp clang_interface.cpp
 SOURCES += imgui_util/glfw_opengl3/imgui_impl_glfw.cpp imgui_util/glfw_opengl3/imgui_impl_opengl3.cpp
-SOURCES += imgui_util/imgui.cpp imgui_util/imgui_draw.cpp imgui_util/imgui_widgets.cpp
+SOURCES += imgui_util/imgui.cpp imgui_util/imgui_draw.cpp imgui_util/imgui_widgets.cpp imgui_util/misc/cpp/imgui_stdlib.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
@@ -124,8 +124,8 @@ endif
 %.o:imgui_util/glfw_opengl3/libs/gl3w/GL/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o:imgui_util/glfw_opengl3/libs/glad/src/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+%.o:imgui_util/misc/cpp/imgui_stdlib.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
 	@echo Build complete for $(ECHO_MESSAGE)

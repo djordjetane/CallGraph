@@ -5,7 +5,7 @@
 #include "imgui_util/imgui.h"
 #include "imgui_util/glfw_opengl3/imgui_impl_glfw.h"
 #include "imgui_util/glfw_opengl3/imgui_impl_opengl3.h"
-#include "imgui_util/misc/cpp/imgui_stdlib.cpp"
+
 #include <cstdio>
 #include <cstdlib>
 #include <string>
