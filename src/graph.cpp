@@ -71,7 +71,6 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     ImGui::SetNextWindowPos(real_position);
     ImGui::SetNextWindowSize(size);
     ImGui::BeginChild(function->NameAsString().c_str(), size, false);
-    //show_info();
 
     ImVec2 position = ImVec2(real_position.x + current_node_size.x/2, 
                              real_position.y + current_node_size.y/2);
