@@ -7,3 +7,4 @@ CallGraph
 SourceExplorer
 *.wiki*
 imgui.ini
+imgui_tmp.ini
