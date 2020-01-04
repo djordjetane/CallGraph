@@ -118,9 +118,12 @@ public:
 
 }; // CallerCalleeCallBack
 
-ASTUnit BuildASTFromSource(const std::string& source)
+ASTUnit BuildASTFromSource(const std::string& source, std::vector<std::string> compiler_args)
 {
-    ASTUnit ast(clang::tooling::buildASTFromCodeWithArgs(source, {"-std=c++17", "-nostdinc++", "-v"}));
+    compiler_args.push_back("-std=c++17");
+    compiler_args.push_back("-nostdinc++");
+    compiler_args.push_back("-v");
+    ASTUnit ast(clang::tooling::buildASTFromCodeWithArgs(source, std::move(compiler_args)));
     return ast;
 }
 

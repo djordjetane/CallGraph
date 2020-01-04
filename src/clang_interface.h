@@ -155,7 +155,7 @@ std::ostream& operator<<(std::ostream&, const Edge&);
 std::ostream& operator<<(std::ostream&, const CallGraph&);
 
 
-ASTUnit BuildASTFromSource(const std::string& source);
+ASTUnit BuildASTFromSource(const std::string& source, std::vector<std::string> compiler_args = {});
 void AddEdge(CallGraph &call_graph, Edge edge);
 std::optional<clang_interface::FunctionDecl> FindNodeWithId(const CallGraph& call_graph, unsigned id);
 CallGraph ExtractCallGraphFromAST(ASTUnit& ast);
