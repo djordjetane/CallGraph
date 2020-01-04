@@ -57,7 +57,8 @@ int main(int, char**)
         if(source_code_panel.SecondsSinceLastTextChange() == 2 && source_code_panel.ShouldBuildCallgraph())
         {
             function_ast_dump_window.Clear();
-            auto new_ast_unit = clang_interface::BuildASTFromSource(source_code_panel.SourceCode());
+	    std::string compiler_include_dir = "-I" + source_code_panel.DirectoryOfLastOpenedFile().string();
+	    auto new_ast_unit = clang_interface::BuildASTFromSource(source_code_panel.SourceCode(), {compiler_include_dir});
             call_graph = clang_interface::ExtractCallGraphFromAST(new_ast_unit);
             ast_unit = std::move(new_ast_unit);
             graph.BuildCallGraph(call_graph);

@@ -6,7 +6,7 @@
 #include "imgui_impl_opengl3.h"
 #include "TextEditor.h"
 #include "clang_interface.h"
-
+#include <filesystem>
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
 //  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
@@ -61,6 +61,8 @@ class SourceCodePanel {
     MainWindow& main_window;
     std::string filename;
     std::string restore_filename = "";
+    std::filesystem::path directory_of_last_opened_file;
+
     bool is_clicked_NEW = false;
     bool is_clicked_OPEN = false;
     bool bt_Save = false;
@@ -76,7 +78,10 @@ public:
     {
 	return editor.SecondsSinceLastTextChange();
     }
-
+    std::filesystem::path DirectoryOfLastOpenedFile() const
+    {
+	return directory_of_last_opened_file;
+    }
     auto IsTextChanged() const
     {
 	return editor.IsTextChanged();

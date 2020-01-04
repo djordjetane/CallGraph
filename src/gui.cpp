@@ -407,6 +407,7 @@ void SourceCodePanel::Draw() {
 	    filename = file;
 	    std::ifstream in_file(filename);
 	    std::string _str;
+	    directory_of_last_opened_file = fs::absolute(file).remove_filename();
 
 	    std::string buffer = "";
 
