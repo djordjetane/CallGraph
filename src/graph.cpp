@@ -2,7 +2,8 @@
 
 #include<set>
 #include "keyboard.hpp"
-namespace GraphGui {
+
+namespace gui {
 
 
 
@@ -147,7 +148,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
         refresh_nodes = true;
 }
 
-void GraphGui::set_window(ImGuiWindow* new_window) 
+void GraphGui::set_window(ImGuiWindow* new_window)
 {
     window = new_window;
 }
@@ -192,7 +193,7 @@ void GraphGui::draw(clang_interface::FunctionDecl* function)
     ImGui::PopClipRect();
 }
 
-void GraphGui::calculate_depth(Node* node) 
+void GraphGui::calculate_depth(Node* node)
 { 
     std::set<unsigned> visited;
 

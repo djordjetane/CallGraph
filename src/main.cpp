@@ -38,7 +38,7 @@ int main(int, char**)
 
     gui::FunctionASTDumpWindow function_ast_dump_window(windows_toggle_menu.show_ast_dump_window);
 
-    GraphGui::GraphGui graph(&io, &source_code_panel.Editor(), windows_toggle_menu.show_callgraph_window);
+    gui::GraphGui graph(&io, &source_code_panel.Editor(), windows_toggle_menu.show_callgraph_window);
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();

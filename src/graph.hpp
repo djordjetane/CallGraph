@@ -20,7 +20,7 @@
 #include "clang_interface.h"
 #include "TextEditor.h"
 
-namespace GraphGui {
+namespace gui {
 
 // name constants
 const static unsigned DISPLAY_NAME_LENGTH = 11;
