@@ -13,7 +13,7 @@
 
 #CXX = g++-8 -std=c++17
 CXX = clang++-8
-
+CC = clang-8
 EXE = SourceExplorer
 SOURCES = src/main.cpp libs/text_editor/TextEditor.cpp src/graph.cpp src/clang_interface.cpp src/gui.cpp
 SOURCES += libs/imgui/glfw_opengl3/imgui_impl_glfw.cpp libs/imgui/glfw_opengl3/imgui_impl_opengl3.cpp
@@ -130,7 +130,7 @@ endif
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
 %.o:libs/imgui/glfw_opengl3/libs/gl3w/GL/%.c
-	$(CXX) $(INCLUDE) $(CFLAGS) -c -o $@ $<
+	$(CC) $(INCLUDE) $(CFLAGS) -c -o $@ $<
 
 %.o:libs/imgui/misc/cpp/imgui_stdlib.cpp
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
