@@ -5,7 +5,7 @@ void H()
     g();
 }
 
-void K();
+void K()
 {
     g();
     g();
