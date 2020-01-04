@@ -22,6 +22,9 @@
 
 namespace GraphGui {
 
+// name constants
+const static unsigned DISPLAY_NAME_LENGHT = 11;
+
 // scroll values and constants
 static float scroll_x = 0;
 static float scroll_y = 0;
@@ -39,12 +42,14 @@ struct Node {
     ImVec2 size;
     clang_interface::FunctionDecl* function;
     std::vector<Node*> neighbors;
+    char display_name[DISPLAY_NAME_LENGHT];
     
     int depth;
     bool show_children;
     size_t number_of_active_parents;
 
     void init();
+    void set_display_name();
     Node();
     Node(clang_interface::FunctionDecl* _function);
 
