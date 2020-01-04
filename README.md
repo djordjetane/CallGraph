@@ -11,13 +11,26 @@ Still in development...
 - [Marko Spasić](https://github.com/spaske00)
 - [Đorđe Tanasković](https://github.com/djordjetane)
 
-## Install
+## Install libs
+```
 sudo apt-get update
-
 sudo apt-get upgrade
-
 sudo apt-get install build-essential make clang-8 libclang-8-dev llvm-8-tools libglfw3 libglfw3-dev pkg-config libglew-dev libncurses5-dev
+```
 
+## Build and run
+```
+git clone https://github.com/MATF-RS20/RS024-sourceexplorer.git
+make 
+cd RS024-sourceexplorer
+./SourceExplorer
+```
+If for some reasone make fails the first time, then run:
+```
+git checkout .
+make
+./SourceExplorer
+```
 ## Usage:
 ### 01. Open files
 Find a file you want to explore and open it.
