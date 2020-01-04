@@ -23,7 +23,7 @@
 namespace GraphGui {
 
 // name constants
-const static unsigned DISPLAY_NAME_LENGHT = 11;
+const static unsigned DISPLAY_NAME_LENGTH = 11;
 
 // scroll values and constants
 static float scroll_x = 0;
@@ -31,6 +31,8 @@ static float scroll_y = 0;
 const static float SCROLL_SPEED = 10;
 const static float NODE_MIN_SIZE_Y = 60;
 const static float NODE_MIN_SIZE_X = NODE_MIN_SIZE_Y;
+const static float NODE_MAX_SIZE_Y = 4*NODE_MIN_SIZE_Y;
+const static float NODE_MAX_SIZE_X = NODE_MIN_SIZE_Y;
 
 // focus value
 static bool refresh_nodes = false;
@@ -42,7 +44,7 @@ struct Node {
     ImVec2 size;
     clang_interface::FunctionDecl* function;
     std::vector<Node*> neighbors;
-    char display_name[DISPLAY_NAME_LENGHT];
+    char display_name[DISPLAY_NAME_LENGTH];
     
     int depth;
     bool show_children;

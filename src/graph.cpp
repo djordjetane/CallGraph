@@ -155,6 +155,8 @@ void GraphGui::draw(clang_interface::FunctionDecl* function)
 {
     ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
     ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
+        ImGui::SetWindowFocus(); 
 
     set_window(ImGui::GetCurrentWindow());
 
@@ -227,20 +229,20 @@ void GraphGui::key_input_check()
     if(screen_position.x > (window->Pos.x + window->Size.x) ||
         screen_position.y > (window->Pos.y + window->Size.y))
         return;
-
-    if(ImGui::IsKeyPressed('W') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
+    
+    if(io_pointer->KeysDown['W'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
     {
         scroll_y -= SCROLL_SPEED;
     }
-    if(ImGui::IsKeyPressed('S') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
+    if(io_pointer->KeysDown['S'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
     {
         scroll_y += SCROLL_SPEED;
     }
-    if(ImGui::IsKeyPressed('A') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
+    if(io_pointer->KeysDown['A'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
     {
         scroll_x -= SCROLL_SPEED;
     }
-    if(ImGui::IsKeyPressed('D') || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
+    if(io_pointer->KeysDown['D'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
     {
         scroll_x += SCROLL_SPEED;
     }

@@ -290,6 +290,9 @@ void SourceCodePanel::Draw() {
 	    ImGui::End();
 	    return;
 	}
+	
+	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
+        ImGui::SetWindowFocus(); 
 
 	if(ImGui::BeginMenuBar())
 	{
@@ -524,6 +527,8 @@ void SourceCodePanel::Draw() {
 
 void WindowsToggleMenu::Draw() {
     ImGui::Begin("Windows toggle menu", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
+        ImGui::SetWindowFocus(); 
     ImGui::Checkbox("Source code", &show_source_code_window); ImGui::SameLine(150);
     ImGui::Checkbox("Callgraph", &show_callgraph_window); ImGui::SameLine(300);
     ImGui::Checkbox("AST dump", &show_ast_dump_window); ImGui::SameLine(450);
@@ -534,7 +539,8 @@ void WindowsToggleMenu::Draw() {
 
 void FunctionListFilteringWindow::Draw() {
     ImGui::Begin("Functions Filtering List", __null, ImGuiWindowFlags_NoCollapse);
-
+	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
+        ImGui::SetWindowFocus(); 
     ImGui::Text("Filter usage:\n"
 		"  \"\"         display all lines\n"
 		"  \"xxx\"      display lines containing \"xxx\"\n"
@@ -565,7 +571,7 @@ void FunctionListFilteringWindow::Draw() {
 		}
 		if(!open && clicked)
 		{
-		    last_cliked = function.get();
+		    last_clicked = function.get();
 		}
 	    }
 	}
@@ -578,6 +584,8 @@ void FunctionListFilteringWindow::Draw() {
 
 void FunctionASTDumpWindow::Draw() {
     ImGui::Begin("Function AST Dump", __null, ImGuiWindowFlags_HorizontalScrollbar);
+	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
+        ImGui::SetWindowFocus(); 
     if(function)
     {
 	ImGui::Text("%s", function->ASTDump().c_str());

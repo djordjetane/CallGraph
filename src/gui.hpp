@@ -116,16 +116,16 @@ class FunctionListFilteringWindow {
 private:
     ImGuiTextFilter filter;
     const clang_interface::CallGraph::NodesList* functions{nullptr};
-    clang_interface::FunctionDecl* last_cliked{nullptr};
+    clang_interface::FunctionDecl* last_clicked{nullptr};
 public:
     clang_interface::FunctionDecl* LastClickedFunction() const
     {
-	return last_cliked;
+	return last_clicked;
     }
     void SetFunctionsList(const clang_interface::CallGraph::NodesList* func)
     {
 	functions = func;
-	last_cliked = nullptr;
+	last_clicked = nullptr;
     }
     void Draw();
 };
