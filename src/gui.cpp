@@ -12,9 +12,14 @@
 #include <string>
 #include "imgui.h"
 #include "TextEditor.h"
-
+#include "keyboard.hpp"
 
 namespace gui {
+
+static void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
 MainWindow::MainWindow() {
     // Setup window
@@ -251,22 +256,22 @@ void SourceCodePanel::Draw() {
     // KEY EVENTS
     //*******************
     // NEW
-    if(io.KeysDown['N'] && io.KeyCtrl)
+    if(io.KeysDown[keyboard::NKey] && io.KeyCtrl)
     {
 	is_clicked_NEW = true;
     }
     // OPEN
-    if(io.KeysDown['O'] && io.KeyCtrl)
+    if(io.KeysDown[keyboard::OKey] && io.KeyCtrl)
     {
 	is_clicked_OPEN = true;
     }
     // SAVE
-    if(io.KeysDown['S'] && io.KeyCtrl)
+    if(io.KeysDown[keyboard::SKey] && io.KeyCtrl)
     {
 	bt_Save = true;
     }
     // SAVE AS
-    if(io.KeysDown['S'] && io.KeyShift && io.KeyCtrl)
+    if(io.KeysDown[keyboard::SKey] && io.KeyShift && io.KeyCtrl)
     {
 	bt_Save = true;
 	unsaved = true;
@@ -276,7 +281,7 @@ void SourceCodePanel::Draw() {
 
     }
     // EXIT
-    if(io.KeysDown['Q'] && io.KeyCtrl)
+    if(io.KeysDown[keyboard::QKey] && io.KeyCtrl)
     {
 	glfwSetWindowShouldClose(main_window.Window(), GLFW_TRUE);
     }

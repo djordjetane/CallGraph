@@ -1,6 +1,7 @@
 #include "graph.hpp"
 
 #include<set>
+#include "keyboard.hpp"
 namespace GraphGui {
 
 
@@ -229,20 +230,20 @@ void GraphGui::key_input_check()
     if(screen_position.x > (window->Pos.x + window->Size.x) ||
         screen_position.y > (window->Pos.y + window->Size.y))
         return;
-    
-    if(io_pointer->KeysDown['W'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
+
+    if(io_pointer->KeysDown[keyboard::WKey] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
     {
         scroll_y -= SCROLL_SPEED;
     }
-    if(io_pointer->KeysDown['S'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
+    if(io_pointer->KeysDown[keyboard::SKey] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_DownArrow]])
     {
         scroll_y += SCROLL_SPEED;
     }
-    if(io_pointer->KeysDown['A'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
+    if(io_pointer->KeysDown[keyboard::AKey] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_LeftArrow]])
     {
         scroll_x -= SCROLL_SPEED;
     }
-    if(io_pointer->KeysDown['D'] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
+    if(io_pointer->KeysDown[keyboard::DKey] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_RightArrow]])
     {
         scroll_x += SCROLL_SPEED;
     }
@@ -250,7 +251,7 @@ void GraphGui::key_input_check()
     if((last_clicked_node != nullptr) 
         && io_pointer->KeyShift 
         && io_pointer->KeyCtrl 
-        && io_pointer->KeysDown['T'])
+	&& io_pointer->KeysDown[keyboard::TKey])
     {
         std::vector<std::string> buffer_lines = editor_pointer->GetTextLines();
         long unsigned row = 0, col = 0;

@@ -18,7 +18,7 @@
 #include "graph.hpp"
 #include "clang_interface.h"
 #include "gui.hpp"
-
+#include "keyboard.hpp"
 
 int main(int, char**)
 {
@@ -49,7 +49,7 @@ int main(int, char**)
 
         windows_toggle_menu.Draw();
 
-        if(io.KeyShift && io.KeyCtrl && io.KeysDown['F'])
+	if(io.KeyShift && io.KeyCtrl && io.KeysDown[keyboard::FKey])
         {
             graph.focus_node(source_code_panel.Editor().GetSelectedText());
         }
