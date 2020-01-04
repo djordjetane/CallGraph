@@ -569,7 +569,7 @@ void FunctionListFilteringWindow::Draw() {
 		    }
 		    ImGui::TreePop();
 		}
-		if(!open && clicked)
+		if(clicked)
 		{
 		    last_clicked = function.get();
 		}
