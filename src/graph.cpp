@@ -25,6 +25,19 @@ void Node::init()
     show_children = false;
 }
 
+void Node::set_display_name()
+{
+    const char* name = function->NameAsString().c_str();
+    unsigned name_length = std::min(10u, (unsigned) strlen(name));
+    int k = 0;
+    while(k < name_length)
+    {
+        display_name[k] = name[k];
+        k++;
+    }
+    display_name[k] = '\0';
+}
+
 void Node::show_neighbours()
 {
     show_children = true;
@@ -70,7 +83,7 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
 
     window->DrawList->AddCircleFilled(position, node_size, col32Node, 256);
     window->DrawList->AddText(ImVec2(position.x - current_node_size.x/2, position.y + node_size + 5.f),
-                                     col32Text, function->NameAsString().c_str());
+                                     col32Text, display_name);
 
     ImGuiWindow* node_window = ImGui::GetCurrentWindow();
 
@@ -301,7 +314,10 @@ void GraphGui::graph_init()
     layers.clear();
     layers.resize(nodes.size(), 0);
     for(const auto& e : nodes)
+    {
         e->number_of_active_parents = 0;
+        e->set_display_name();
+    }
 
     if(root == nullptr)
         root = nodes.front().get();
