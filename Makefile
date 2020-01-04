@@ -141,6 +141,8 @@ all: $(EXE)
 $(EXE): $(OBJS)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 
+.PRECIOUS: %.o Makefile
+
 .PHONY: clean
 
 clean:
