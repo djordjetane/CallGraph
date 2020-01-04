@@ -1,10 +1,10 @@
 #ifndef GRAPH_GUI
 #define GRAPH_GUI
 
-#include "imgui_util/imgui.h"
-#include "imgui_util/imgui_internal.h"
-#include "imgui_util/glfw_opengl3/imgui_impl_glfw.h"
-#include "imgui_util/glfw_opengl3/imgui_impl_opengl3.h"
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include <cstdio>
 #include <string>
 #include <iostream>
@@ -18,7 +18,7 @@
 #include <queue>
 #include <cmath>
 #include "clang_interface.h"
-#include "editor_util/TextEditor.h"
+#include "TextEditor.h"
 
 namespace GraphGui {
 

@@ -16,9 +16,9 @@ CXX = clang++-8
 CC = clang-8
 
 EXE = SourceExplorer
-SOURCES = main.cpp editor_util/editor_util.cpp editor_util/TextEditor.cpp graph.cpp clang_interface.cpp
-SOURCES += imgui_util/glfw_opengl3/imgui_impl_glfw.cpp imgui_util/glfw_opengl3/imgui_impl_opengl3.cpp
-SOURCES += imgui_util/imgui.cpp imgui_util/imgui_draw.cpp imgui_util/imgui_widgets.cpp imgui_util/misc/cpp/imgui_stdlib.cpp
+SOURCES = src/main.cpp libs/text_editor/TextEditor.cpp src/graph.cpp src/clang_interface.cpp src/gui.cpp
+SOURCES += libs/imgui/glfw_opengl3/imgui_impl_glfw.cpp libs/imgui/glfw_opengl3/imgui_impl_opengl3.cpp
+SOURCES += libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/misc/cpp/imgui_stdlib.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
@@ -26,11 +26,15 @@ LLVMCOMPONENTS := cppbackend
 RTTIFLAG := -fno-rtti
 LLVMCONFIG := /usr/bin/llvm-config-8
 
+INCLUDE = -Ilibs/imgui/glfw_opengl3/
+INCLUDE += -Ilibs/imgui/
+INCLUDE += -I$(shell $(LLVMCONFIG) --src-root)/tools/clang/include
+INCLUDE += -I$(shell $(LLVMCONFIG) --obj-root)/tools/clang/include
+INCLUDE += -Ilibs/text_editor/
+INCLUDE += -Ilibs/imgui/misc/cpp/
 
 
-CXXFLAGS = -Iimgui_util/glfw_opengl3/ -Iimgui_util/ -I$(shell $(LLVMCONFIG) --src-root)/tools/clang/include -I$(shell $(LLVMCONFIG) --obj-root)/tools/clang/include $(shell $(LLVMCONFIG) --cxxflags) $(RTTIFLAG) -std=c++17
-CXXFLAGS += -g -Wall -Wformat
-
+CXXFLAGS =  $(shell $(LLVMCONFIG) --cxxflags) $(RTTIFLAG) -std=c++17 -g -Wall -Wformat
 CFLAGS = -std=c99
 
 LIBS = \
@@ -114,23 +118,23 @@ endif
 ## BUILD RULES
 ##---------------------------------------------------------------------
 
-%.o:%.cpp
-	$(CXX) $(CXXFLAGS) $(LLVMDFLAGS) -c -o $@ $<
+%.o:src/%.cpp
+	$(CXX) $(INCLUDE) $(LLVMDFLAGS) $(CXXFLAGS)  -c -o $@ $<
 
-%.o:imgui_util/glfw_opengl3/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+%.o:libs/imgui/glfw_opengl3/%.cpp
+	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
-%.o:imgui_util/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+%.o:libs/imgui/%.cpp
+	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
-%.o:editor_util/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+%.o:libs/text_editor/%.cpp
+	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
-%.o:imgui_util/glfw_opengl3/libs/gl3w/GL/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+%.o:libs/imgui/glfw_opengl3/libs/gl3w/GL/%.c
+	$(CC) $(INCLUDE) $(CFLAGS) -c -o $@ $<
 
-%.o:imgui_util/misc/cpp/imgui_stdlib.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+%.o:libs/imgui/misc/cpp/imgui_stdlib.cpp
+	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
 	@echo Build complete for $(ECHO_MESSAGE)

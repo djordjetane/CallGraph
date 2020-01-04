@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTEDITOR_H
+#define TEXTEDITOR_H
 
 #include <string>
 #include <vector>
@@ -8,6 +9,7 @@
 #include <unordered_map>
 #include <map>
 #include <regex>
+#include <chrono>
 #include "imgui.h"
 
 class TextEditor
@@ -396,3 +398,4 @@ private:
 	float mLastClick;
         std::chrono::system_clock::time_point mLastTextChangeTime;
 };
+#endif
