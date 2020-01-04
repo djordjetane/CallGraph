@@ -34,10 +34,11 @@ int main(int, char**)
 
     clang_interface::ASTUnit ast_unit;
     clang_interface::CallGraph call_graph;
-    gui::FunctionListFilteringWindow functions_filtering_window;
-    gui::FunctionASTDumpWindow function_ast_dump_window;
+    gui::FunctionListFilteringWindow functions_filtering_window(windows_toggle_menu.show_function_list_window);
 
-    GraphGui::GraphGui graph(&io, &source_code_panel.Editor());
+    gui::FunctionASTDumpWindow function_ast_dump_window(windows_toggle_menu.show_ast_dump_window);
+
+    GraphGui::GraphGui graph(&io, &source_code_panel.Editor(), windows_toggle_menu.show_callgraph_window);
     while (!glfwWindowShouldClose(main_window.Window()))
     {
         glfwPollEvents();

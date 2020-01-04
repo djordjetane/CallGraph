@@ -543,7 +543,7 @@ void WindowsToggleMenu::Draw() {
 }
 
 void FunctionListFilteringWindow::Draw() {
-    ImGui::Begin("Functions Filtering List", __null, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Functions Filtering List", &p_open, ImGuiWindowFlags_NoCollapse);
 	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
         ImGui::SetWindowFocus(); 
     ImGui::Text("Filter usage:\n"
@@ -588,7 +588,7 @@ void FunctionListFilteringWindow::Draw() {
 
 
 void FunctionASTDumpWindow::Draw() {
-    ImGui::Begin("Function AST Dump", __null, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::Begin("Function AST Dump", &p_open, ImGuiWindowFlags_HorizontalScrollbar);
 	if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
         ImGui::SetWindowFocus(); 
     if(function)

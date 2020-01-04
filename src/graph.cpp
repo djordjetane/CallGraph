@@ -155,7 +155,7 @@ void GraphGui::set_window(ImGuiWindow* new_window)
 void GraphGui::draw(clang_interface::FunctionDecl* function)
 {
     ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
-    ImGui::Begin("GENERATED CALLGRAPH", __null, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::Begin("GENERATED CALLGRAPH", &p_show, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
     if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
         ImGui::SetWindowFocus(); 
 

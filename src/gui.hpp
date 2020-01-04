@@ -114,7 +114,9 @@ private:
     ImGuiTextFilter filter;
     const clang_interface::CallGraph::NodesList* functions{nullptr};
     clang_interface::FunctionDecl* last_clicked{nullptr};
+    bool &p_open;
 public:
+    explicit FunctionListFilteringWindow(bool &p_open) : p_open(p_open) {}
     clang_interface::FunctionDecl* LastClickedFunction() const
     {
 	return last_clicked;
@@ -130,7 +132,9 @@ public:
 class FunctionASTDumpWindow {
 private:
     clang_interface::FunctionDecl* function{nullptr};
+    bool& p_open;
 public:
+    explicit FunctionASTDumpWindow(bool &p_open) : p_open(p_open) {}
     void SetFunction(clang_interface::FunctionDecl* func)
     {
 	function = func;

@@ -91,11 +91,13 @@ private:
     int node_line_thickness = 5;
     ImU32 node_line_color = IM_COL32(255, 165, 0, 100);
 
+    bool &p_show;
 
 public:
-    GraphGui(ImGuiIO* io, TextEditor *editor)
+    GraphGui(ImGuiIO* io, TextEditor *editor, bool &p_show)
         : io_pointer(io)
         , editor_pointer(editor)
+	, p_show(p_show)
     {}
     void BuildCallGraph(clang_interface::CallGraph& call_graph);
     void set_window(ImGuiWindow* new_window);
