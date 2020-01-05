@@ -227,6 +227,7 @@ void GraphGui::key_input_check() {
           TextEditor::Coordinates(row - 1, 0),
           TextEditor::Coordinates(
               row, 0));
+	editor_pointer->SetCursorPosition(TextEditor::Coordinates(row-1,0));
     hovered_node = nullptr;
   }
 
