@@ -1,6 +1,6 @@
 #include "graph.hpp"
 
-#include<set>
+#include <set>
 #include "keyboard.hpp"
 
 namespace gui {
@@ -73,13 +73,9 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color, size_t line_thickn
     ImGui::SetNextWindowPos(real_position);
     ImGui::SetNextWindowSize(size);
     ImGui::BeginChild(function->NameAsString().c_str(), size, false);
-    //show_info();
 
     ImVec2 position = ImVec2(real_position.x + current_node_size.x/2, 
                              real_position.y + current_node_size.y/2);
-
-    ImU32 col32Node = ImColor(0.f, 247.f/255.f, 1.f);
-    ImU32 col32Text = ImColor(1.f, 1.f, 1.f);
 
     float node_size = current_node_size.x/2;
 
@@ -155,7 +151,6 @@ void GraphGui::set_window(ImGuiWindow* new_window)
 
 void GraphGui::draw(clang_interface::FunctionDecl* function)
 {
-    ImGui::PushClipRect(ImVec2(100, 100), ImVec2(200, 200), true);
     ImGui::Begin("GENERATED CALLGRAPH", &p_show, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
     if(ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
         ImGui::SetWindowFocus(); 
@@ -200,7 +195,6 @@ void GraphGui::draw(clang_interface::FunctionDecl* function)
         shrink_graph();
     }
     ImGui::End();
-    ImGui::PopClipRect();
 }
 
 void GraphGui::calculate_depth(Node* node)
@@ -233,13 +227,7 @@ void GraphGui::refresh()
 
 void GraphGui::key_input_check()
 {
-    ImVec2 screen_position = io_pointer->MousePos;
-
-    if(screen_position.x < window->Pos.x || 
-        screen_position.y < window->Pos.y)
-        return;
-    if(screen_position.x > (window->Pos.x + window->Size.x) ||
-        screen_position.y > (window->Pos.y + window->Size.y))
+    if(!ImGui::IsWindowHovered())
         return;
 
     if(io_pointer->KeysDown[keyboard::WKey] || io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]])
@@ -279,19 +267,14 @@ void GraphGui::key_input_check()
             }
         }
         row--;
-
-        //Finds first ocurance not declaration (#FIXIT)
-
         if(row != 0 || col != 0)
             editor_pointer->SetSelection(TextEditor::Coordinates(row, col)
                             , TextEditor::Coordinates(row, col + last_clicked_node->function->NameAsString().length()));
-
-        // Temporary (#TODO)
         last_clicked_node = nullptr;
     }
 
-    current_node_size.x *= (100.0f - 3*io_pointer->MouseWheel)/100;
-    current_node_size.y *= (100.0f - 3*io_pointer->MouseWheel)/100;
+    current_node_size.x *= (100.0f - ZOOM_SPEED*io_pointer->MouseWheel)/100.0f;
+    current_node_size.y *= (100.0f - ZOOM_SPEED*io_pointer->MouseWheel)/100.0f;
     current_node_size.x = std::max(NODE_MIN_SIZE_X, current_node_size.x);
     current_node_size.y = std::max(NODE_MIN_SIZE_Y, current_node_size.y);
     node_distance_x = 1.5*current_node_size.x;
@@ -364,7 +347,6 @@ void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph)
     {
         return;
     }
-    // postavljamo da main ima nulti indeks
     swap(nodes.at(0), nodes.at(main_function_index));
 
     for(const auto[from, to] : call_graph.edges)
