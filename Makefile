@@ -17,7 +17,8 @@ CXX = clang++-8
 EXE = SourceExplorer
 SOURCES = src/main.cpp libs/text_editor/TextEditor.cpp src/graph.cpp src/clang_interface.cpp src/gui.cpp
 SOURCES += libs/imgui/glfw_opengl3/imgui_impl_glfw.cpp libs/imgui/glfw_opengl3/imgui_impl_opengl3.cpp
-SOURCES += libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/misc/cpp/imgui_stdlib.cpp
+SOURCES += libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp 
+
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
@@ -82,9 +83,6 @@ CXXFLAGS += `pkg-config --cflags glfw3`
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
 %.o:libs/text_editor/%.cpp
-	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
-
-%.o:libs/imgui/misc/cpp/imgui_stdlib.cpp
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
