@@ -133,8 +133,8 @@ void GraphGui::draw(clang_interface::FunctionDecl* function) {
 
   set_window(ImGui::GetCurrentWindow());
 
-  hovered_node = nullptr;
   key_input_check();
+  hovered_node = nullptr;
   layers.clear();
   layers.resize(nodes.size(), 0);
 
@@ -194,7 +194,13 @@ void GraphGui::refresh() {
 }
 
 void GraphGui::key_input_check() {
-  if (!ImGui::IsWindowHovered()) return;
+  ImVec2 screen_position = io_pointer->MousePos;
+
+    if(screen_position.x < window->Pos.x 
+       || screen_position.y < window->Pos.y
+       || screen_position.x > (window->Pos.x + window->Size.x)
+       || screen_position.y > (window->Pos.y + window->Size.y))
+        return;
 
   if (io_pointer->KeysDown[keyboard::WKey] ||
       io_pointer->KeysDown[io_pointer->KeyMap[ImGuiKey_UpArrow]]) {
@@ -213,15 +219,15 @@ void GraphGui::key_input_check() {
     scroll_x += SCROLL_SPEED;
   }
 
-  if ((last_clicked_node != nullptr) && io_pointer->KeyShift &&
+  if ((hovered_node != nullptr) && io_pointer->KeyShift &&
       io_pointer->KeyCtrl && io_pointer->KeysDown[keyboard::TKey]) {
     std::vector<std::string> buffer_lines = editor_pointer->GetTextLines();
     long unsigned row = 0, col = 0;
-    auto fun_len = last_clicked_node->function->NameAsString().length();
+    auto fun_len = hovered_node->function->NameAsString().length();
 
     for (auto begin = buffer_lines.begin();
          begin != buffer_lines.end() && col == 0; begin++, row++) {
-      col = begin->find(last_clicked_node->function->NameAsString());
+      col = begin->find(hovered_node->function->NameAsString());
       if (col == begin->npos)
         col = 0;
       else {
@@ -235,8 +241,8 @@ void GraphGui::key_input_check() {
       editor_pointer->SetSelection(
           TextEditor::Coordinates(row, col),
           TextEditor::Coordinates(
-              row, col + last_clicked_node->function->NameAsString().length()));
-    last_clicked_node = nullptr;
+              row, col + hovered_node->function->NameAsString().length()));
+    hovered_node = nullptr;
   }
 
   current_node_size.x *=
