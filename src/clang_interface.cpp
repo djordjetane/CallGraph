@@ -56,9 +56,9 @@ class CallerCalleeFinderCallback
     : public clang::ast_matchers::MatchFinder::MatchCallback {
  private:
   CallGraph& call_graph;
-
+  clang::ASTContext& ast_context;
  public:
-  CallerCalleeFinderCallback(clang_interface::CallGraph& cg) : call_graph(cg) {}
+  CallerCalleeFinderCallback(clang_interface::CallGraph& cg, clang::ASTContext& ast_context) : call_graph(cg), ast_context(ast_context) {}
   virtual void run(
       const clang::ast_matchers::MatchFinder::MatchResult& Results) {
     auto caller_decl = Results.Nodes.getNodeAs<clang::FunctionDecl>("caller");
@@ -78,7 +78,7 @@ class CallerCalleeFinderCallback
     FunctionDecl* new_caller_node;
     if (existing_caller_node == end(call_graph.nodes)) {
       call_graph.nodes.emplace_back(
-          std::make_unique<clang_interface::FunctionDecl>(caller_decl));
+          std::make_unique<clang_interface::FunctionDecl>(caller_decl, ast_context.getFullLoc(caller_decl->getBeginLoc())));
       new_caller_node = call_graph.nodes.back().get();
     } else {
       new_caller_node = existing_caller_node->get();
@@ -91,7 +91,7 @@ class CallerCalleeFinderCallback
     FunctionDecl* new_callee_node;
     if (existing_callee_node == end(call_graph.nodes)) {
       call_graph.nodes.emplace_back(
-          std::make_unique<clang_interface::FunctionDecl>(callee_decl));
+          std::make_unique<clang_interface::FunctionDecl>(callee_decl, ast_context.getFullLoc(callee_decl->getBeginLoc())));
       new_callee_node = call_graph.nodes.back().get();
     } else {
       new_callee_node = existing_callee_node->get();
@@ -114,7 +114,7 @@ ASTUnit BuildASTFromSource(const std::string& source,
 
 clang_interface::CallGraph ExtractCallGraphFromAST(ASTUnit& ast) {
   CallGraph call_graph;
-  clang_interface::CallerCalleeFinderCallback Callback(call_graph);
+  clang_interface::CallerCalleeFinderCallback Callback(call_graph, ast.ASTContext());
   clang::ast_matchers::MatchFinder Finder;
 
   using clang::ast_matchers::callExpr;

@@ -11,7 +11,7 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/Tooling/Tooling.h"
-
+#include "clang/Basic/SourceLocation.h"
 #include "llvm/Support/raw_ostream.h"
 
 #define DUMP(out, x) out << #x << ' ' << x << '\n'
@@ -35,7 +35,7 @@ class ParamVarDecl {
   const clang::ParmVarDecl* decl{nullptr};
   std::string name;
   std::string type;
-
+  clang::FullSourceLoc full_source_loc;
  public:
   ParamVarDecl() = default;
   explicit ParamVarDecl(const clang::ParmVarDecl* p, unsigned index)
@@ -55,30 +55,31 @@ class FunctionDecl {
   std::string return_type;
   std::vector<ParamVarDecl> params;
   std::string ast_dump;
+  clang::FullSourceLoc full_source_loc;
 
  public:
   FunctionDecl() = default;
-  explicit FunctionDecl(const clang::FunctionDecl* arg)
+  explicit FunctionDecl(const clang::FunctionDecl* arg, clang::FullSourceLoc source_loc)
       : decl(arg),
         name(arg->getNameAsString()),
-        return_type(arg->getReturnType().getAsString()) {
+        return_type(arg->getReturnType().getAsString()),
+        full_source_loc(source_loc) {
     unsigned i = 0;
     for (auto param = arg->param_begin(); param != arg->param_end(); ++param) {
       params.emplace_back(*param, ++i);
     }
     llvm::raw_string_ostream out(ast_dump);
-
-    std::cerr << "ASDASDASDASD";
     arg->dump(out);
-    std::cerr << out.str();
-    ;
-    std::cerr << ast_dump;
+    out.str();
+
   }
   const std::string& ASTDump() const { return ast_dump; }
   unsigned ID() const { return decl->getID(); }
   const std::string& NameAsString() const { return name; }
   const std::string& ReturnTypeAsString() const { return return_type; }
 
+  const clang::FullSourceLoc& FullSourceLoc() const { return full_source_loc; }
+	
   auto ParamBegin() const { return params.begin(); }
   auto ParamEnd() const { return params.end(); }
 
