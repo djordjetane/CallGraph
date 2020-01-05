@@ -109,6 +109,8 @@ public:
     void focus_node(const std::string& node_signature);
     void draw_node_info_window();
     void graph_init();
+    void shrink_graph();
+    void show_full_graph();
 };
 
 } // namespace GraphGui

@@ -189,6 +189,16 @@ void GraphGui::draw(clang_interface::FunctionDecl* function)
         refresh();
 
     draw_node_info_window();
+    ImGui::SetCursorScreenPos(ImVec2(window->Pos.x+5, window->Pos.y+25)); 
+    if(ImGui::Button("Full Graph"))
+    {
+        show_full_graph();
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Shrink"))
+    {
+        shrink_graph();
+    }
     ImGui::End();
     ImGui::PopClipRect();
 }
@@ -414,6 +424,41 @@ void GraphGui::draw_node_info_window()
         hovered_node->show_info();
     ImGui::End();
     ImGui::PopStyleColor();
+}
+
+void GraphGui::shrink_graph()
+{
+    for(const auto& e : nodes)
+    {
+        e->number_of_active_parents = 0;
+        e->show_children = false;
+    }
+
+    if(root == nullptr)
+        root = nodes.front().get();
+
+    root->number_of_active_parents = 1;
+}
+
+void GraphGui::show_full_graph()
+{
+    std::set<Node*> visited;
+
+    std::queue<Node*> s;
+    s.push(root);
+    while(!s.empty())
+    {
+        Node* node = s.front();
+        s.pop();
+
+        if(visited.find(node) != visited.end())
+            continue;
+        visited.insert(node);
+
+        node->show_neighbours();
+        for(Node* neighbor: node->neighbors)
+            s.push(neighbor);
+    }
 }
 
 } // namespace GraphGui
