@@ -7,6 +7,9 @@
 #include "TextEditor.h"
 #include "clang_interface.h"
 #include <filesystem>
+
+namespace fs = std::filesystem;
+
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
 //  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
@@ -50,14 +53,25 @@ public:
     ~MainWindow();
 };
 
+struct FileBrowser
+{
+    std::vector<fs::path> files;
+	bool warning = false;
+	std::string new_name = "";
+	std::string error_msg = "";
 
+    void get_directory_files(const fs::path& pathname);
+    void draw_filebrowser(const char* action, fs::path& filename, bool& write, bool& is_clicked_OPEN);
+};
 
 class SourceCodePanel {
     ImGuiIO &io;
     TextEditor editor;
+    FileBrowser file_browser;
     MainWindow& main_window;
-    std::string filename;
-    std::string restore_filename = "";
+    fs::path filename = "";
+    fs::path file = fs::current_path();
+    fs::path restore_filename = "";
     std::filesystem::path directory_of_last_opened_file;
 
     bool is_clicked_NEW = false;
