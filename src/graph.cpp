@@ -221,27 +221,12 @@ void GraphGui::key_input_check() {
 
   if ((hovered_node != nullptr) && io_pointer->KeyShift &&
       io_pointer->KeyCtrl && io_pointer->KeysDown[keyboard::TKey]) {
-    std::vector<std::string> buffer_lines = editor_pointer->GetTextLines();
-    long unsigned row = 0, col = 0;
-    auto fun_len = hovered_node->function->NameAsString().length();
-
-    for (auto begin = buffer_lines.begin();
-         begin != buffer_lines.end() && col == 0; begin++, row++) {
-      col = begin->find(hovered_node->function->NameAsString());
-      if (col == begin->npos)
-        col = 0;
-      else {
-        if (buffer_lines[row][col + fun_len] != '(' &&
-            !isspace(buffer_lines[row][col + fun_len]))
-          col = 0;
-      }
-    }
-    row--;
-    if (row != 0 || col != 0)
-      editor_pointer->SetSelection(
-          TextEditor::Coordinates(row, col),
+    
+    auto row = hovered_node->function->FullSourceLoc().getLineNumber();
+	editor_pointer->SetSelection(
+          TextEditor::Coordinates(row - 1, 0),
           TextEditor::Coordinates(
-              row, col + hovered_node->function->NameAsString().length()));
+              row, 0));
     hovered_node = nullptr;
   }
 
