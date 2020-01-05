@@ -21,8 +21,8 @@ sudo apt-get install build-essential make clang-8 libclang-8-dev llvm-8-tools li
 ## Build and run
 ```
 git clone https://github.com/MATF-RS20/RS024-sourceexplorer.git
-make 
 cd RS024-sourceexplorer
+make 
 ./SourceExplorer
 ```
 If for some reasone make fails the first time, then run:
