@@ -13,7 +13,7 @@
 
 #CXX = g++-8 -std=c++17
 CXX = clang++-8
-CC = clang-8
+
 EXE = SourceExplorer
 SOURCES = src/main.cpp libs/text_editor/TextEditor.cpp src/graph.cpp src/clang_interface.cpp src/gui.cpp
 SOURCES += libs/imgui/glfw_opengl3/imgui_impl_glfw.cpp libs/imgui/glfw_opengl3/imgui_impl_opengl3.cpp
@@ -42,16 +42,12 @@ LIBS = \
 				-lclangFrontend\
 				-lclangDriver\
 				-lclangSerialization\
-				-lclangCodeGen\
 				-lclangParse\
 				-lclangSema\
 				-lclangStaticAnalyzerFrontend\
 				-lclangStaticAnalyzerCheckers\
 				-lclangStaticAnalyzerCore\
 				-lclangAnalysis\
-				-lclangARCMigrate\
-				-lclangRewrite\
-				-lclangRewriteFrontend\
 				-lclangEdit\
 				-lclangAST\
 				-lclangLex\
@@ -62,56 +58,15 @@ LIBS = \
 				$(shell $(LLVMCONFIG) --system-libs)\
 				-lcurses\
 				-lstdc++fs\
-				-lGLEW
+				-lGLEW\
+				-lGL\
+				`pkg-config --static --libs glfw3`\
 
-#LIBS =
-
-##---------------------------------------------------------------------
-## OPENGL LOADER
-##---------------------------------------------------------------------
-
-## Using OpenGL loader: gl3w [default]
-#SOURCES += imgui_util/glfw_opengl3/libs/gl3w/GL/gl3w.c
-#CXXFLAGS += -Iimgui_util/glfw_opengl3/libs/gl3w
-
-## Using OpenGL loader: glew
-## (This assumes a system-wide installation)
 CXXFLAGS += -DIMGUI_IMPL_OPENGL_LOADER_GLEW
+CXXFLAGS += `pkg-config --cflags glfw3`
 
-## Using OpenGL loader: glad
-# SOURCES += ../libs/glad/src/glad.c
-# CXXFLAGS += -I../libs/glad/include -DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
-##---------------------------------------------------------------------
-## BUILD FLAGS PER PLATFORM
-##---------------------------------------------------------------------
 
-ifeq ($(UNAME_S), Linux) #LINUX
-	ECHO_MESSAGE = "Linux"
-	LIBS += -lGL -lGLEW `pkg-config --static --libs glfw3`
-
-	CXXFLAGS += `pkg-config --cflags glfw3`
-#	CFLAGS = $(CXXFLAGS)
-endif
-
-ifeq ($(UNAME_S), Darwin) #APPLE
-	ECHO_MESSAGE = "Mac OS X"
-	LIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
-	LIBS += -L/usr/local/lib -L/opt/local/lib
-	#LIBS += -lglfw3
-	LIBS += -lglfw
-
-	CXXFLAGS += -I/usr/local/include -I/opt/local/include
-	CFLAGS = $(CXXFLAGS)
-endif
-
-ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
-	ECHO_MESSAGE = "MinGW"
-	LIBS += -lglfw3 -lgdi32 -lopengl32 -limm32
-
-	CXXFLAGS += `pkg-config --cflags glfw3`
-	CFLAGS = $(CXXFLAGS)
-endif
 
 ##---------------------------------------------------------------------
 ## BUILD RULES
