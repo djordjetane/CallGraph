@@ -129,9 +129,6 @@ endif
 %.o:libs/text_editor/%.cpp
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
-%.o:libs/imgui/glfw_opengl3/libs/gl3w/GL/%.c
-	$(CC) $(INCLUDE) $(CFLAGS) -c -o $@ $<
-
 %.o:libs/imgui/misc/cpp/imgui_stdlib.cpp
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
