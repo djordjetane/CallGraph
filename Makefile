@@ -86,7 +86,6 @@ CXXFLAGS += `pkg-config --cflags glfw3`
 	$(CXX) $(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
-	chmod 0444 imgui.ini
 	@echo Build complete for $(ECHO_MESSAGE)
 
 $(EXE): $(OBJS)
