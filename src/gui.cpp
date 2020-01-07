@@ -584,7 +584,9 @@ void FunctionListFilteringWindow::Draw() {
   if (functions) {
     for (const auto& function : *functions) {
       if (filter.PassFilter(function->NameAsString().c_str())) {
-        bool open = ImGui::TreeNode(function->NameAsString().c_str());
+	char idbuffer[16];
+	sprintf(idbuffer, "%u", function->ID());
+	bool open = ImGui::TreeNode(idbuffer, "%s", function->NameAsString().c_str());
         bool clicked = ImGui::IsItemClicked();
 
         if (open) {
