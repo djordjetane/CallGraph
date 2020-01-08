@@ -160,11 +160,16 @@ void GraphGui::draw(clang_interface::FunctionDecl* function) {
   draw_node_info_window();
   ImGui::SetCursorScreenPos(ImVec2(window->Pos.x + 5, window->Pos.y + 25));
   if (ImGui::Button("Full Graph")) {
-    show_full_graph();
+      if(!nodes.empty()) {
+	  show_full_graph();
+      }
+
   }
   ImGui::SameLine();
   if (ImGui::Button("Shrink")) {
-    shrink_graph();
+      if(!nodes.empty()) {
+	  shrink_graph();
+      }
   }
   ImGui::End();
 }

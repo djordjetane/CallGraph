@@ -58,7 +58,7 @@ int main(int, char**) {
       graph.focus_node(source_code_panel.Editor().GetSelectedText());
     }
 
-    if (source_code_panel.SecondsSinceLastTextChange() == 2 &&
+    if (source_code_panel.SecondsSinceLastTextChange() == 1 &&
         source_code_panel.ShouldBuildCallgraph()) {
       function_ast_dump_window.Clear();
       std::string compiler_include_dir =
