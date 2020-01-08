@@ -107,7 +107,6 @@ ASTUnit BuildASTFromSource(const std::string& source,
   compiler_args.push_back("-std=c++17");
   compiler_args.push_back("-nostdinc++");
   compiler_args.push_back("-v");
-  for (const auto& e : compiler_args) std::cerr << e << '\n';
   ASTUnit ast(clang::tooling::buildASTFromCodeWithArgs(source, compiler_args));
   return ast;
 }

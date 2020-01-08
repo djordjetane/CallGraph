@@ -212,7 +212,7 @@ void save(const char* new_filename, const std::string& buffer) {
   if (!outfile.is_open())  //(#FIXIT) some label better
   {
     std::cerr << "Failed to open file\n";
-    exit(1);
+
   }
   outfile << buffer;
 
@@ -431,7 +431,7 @@ void SourceCodePanel::Draw() {
       std::ofstream output_stream(filename);
       if (!output_stream.is_open()) {
         std::cerr << "Failed to create file\n";
-        exit(1);
+
       }
 
       output_stream << editor.GetText();
@@ -496,7 +496,7 @@ void SourceCodePanel::Draw() {
           std::ofstream output_stream(filename);
           if (!output_stream.is_open()) {
             std::cerr << "Failed to create file\n";
-            exit(1);
+
           }
 
           // output_stream << editor.GetText();
@@ -563,7 +563,7 @@ void WindowsToggleMenu::Draw() {
   ImGui::Checkbox("AST dump", &show_ast_dump_window);
   ImGui::SameLine(450);
   ImGui::Checkbox("Function list", &show_function_list_window);
-  ImGui::SameLine(600);
+  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
   ImGui::End();
 }

@@ -316,15 +316,6 @@ void GraphGui::BuildCallGraph(clang_interface::CallGraph& call_graph) {
     (*from_node)->add_edge((*to_node).get());
   }
 
-  std::cout << "sup" << std::endl;
-  for (const auto& e : nodes) {
-    std::cout << e->function->NameAsString() << '\n';
-    for (const auto& n : e->neighbors) {
-      std::cout << '\t' << n->function->NameAsString() << '\n';
-    }
-  }
-  std::cout << std::endl;
-
   graph_init();
 }
 
