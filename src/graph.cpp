@@ -57,16 +57,16 @@ void Node::draw(ImGuiWindow* window, const ImU32& line_color,
 
   ImGui::SetNextWindowPos(real_position);
   ImGui::SetNextWindowSize(size);
-  ImGui::BeginChild(function->NameAsString().c_str(), size, false);
+  ImGui::BeginChild(std::to_string(function->ID()).c_str(), size, false);
 
   ImVec2 position = ImVec2(real_position.x + current_node_size.x / 2,
                            real_position.y + current_node_size.y / 2);
 
-  float node_size = current_node_size.x / 2;
+  float node_radius = current_node_size.x / 2;
 
-  window->DrawList->AddCircleFilled(position, node_size, col32Node, 256);
+  window->DrawList->AddCircleFilled(position, node_radius, col32Node, 256);
   window->DrawList->AddText(ImVec2(position.x - current_node_size.x / 2,
-                                   position.y + node_size + 5.f),
+                                   position.y + node_radius + 5.f),
                             col32Text, display_name);
 
   ImGuiWindow* node_window = ImGui::GetCurrentWindow();
