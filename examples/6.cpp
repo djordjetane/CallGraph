@@ -1,17 +1,49 @@
 template<typename Func, typename ...Args>
-void ForwardIt(Func func, Args&& ...args)
+auto ForwardIt(Func func, Args&& ...args)
 {
-	func(args...);
+	return func(args...);
 }
 
-void g(int, double, char)
-{}
-void f()
-{}
+template<typename T>
+struct vector {};
+
+template<typename Index>
+vector<int> GetAllIndexes(Index from, Index to)
+{
+    vector<int> result;
+
+    return result;
+}
+
+struct base
+{
+    void BaseNormal()
+    {
+		ForwardIt(GetAllIndexes<int>, 10, 20);
+    }
+};
+int f() { return 0; }
+struct derived : public base
+{
+    void BaseNormal(base* base) override
+    {
+		ForwardIt(f);
+    }
+};
+
+void g() {}
 
 int main()
 {
-	ForwardIt(g, 1, 3.4, 'a');
-	ForwardIt(f);
+	base *b = new derived;
+	b->BaseVirtual(b);
+	b->BaseNormal();
+	derived d;
+	d.BaseNormal(&d);
 	return 0;
 }
+
+
+
+
+
