@@ -156,7 +156,7 @@ MainWindow::MainWindow() {
   auto monitor = glfwGetPrimaryMonitor();
   auto mode = glfwGetVideoMode(monitor);
 
-  window = glfwCreateWindow(mode->width, mode->height, "CallGraph", NULL, NULL);
+  window = glfwCreateWindow(mode->width, mode->height, "Source Explorer", NULL, NULL);
   if (window == NULL) {
     exit(EXIT_FAILURE);
   }
@@ -348,7 +348,7 @@ void SourceCodePanel::Draw() {
   // SOURCE CODE WINDOW
   //*******************
   {
-    if (!ImGui::Begin("SOURCE CODE", show_source_code_window,
+    if (!ImGui::Begin("Source Code", show_source_code_window,
                       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse)) {
       ImGui::End();
       return;
@@ -552,7 +552,7 @@ void SourceCodePanel::Draw() {
 
 void WindowsToggleMenu::Draw() {
   ImGui::Begin(
-      "Windows toggle menu", __null,
+      "Windows Toggle Menu", __null,
       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
     ImGui::SetWindowFocus();

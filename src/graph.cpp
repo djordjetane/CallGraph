@@ -126,7 +126,7 @@ void GraphGui::set_window(ImGuiWindow* new_window) { window = new_window; }
 
 void GraphGui::draw(clang_interface::FunctionDecl* function) {
   ImGui::Begin(
-      "GENERATED CALLGRAPH", &p_show,
+      "Generated Callgraph", &p_show,
       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
     ImGui::SetWindowFocus();
@@ -346,7 +346,7 @@ void GraphGui::draw_node_info_window() {
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
   ImGui::SetNextWindowPos(pos);
-  ImGui::BeginChild((char*)"test", size, true);
+  ImGui::BeginChild((char*)"node info window", size, true);
   hovered_node->show_info();
   ImGui::End();
   ImGui::PopStyleColor();

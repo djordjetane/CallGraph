@@ -26,7 +26,7 @@ const static unsigned DISPLAY_NAME_LENGTH = 11;
 
 // scroll values and constants
 static float scroll_x = 0;
-static float scroll_y = 0;
+static float scroll_y = 10;
 const static float SCROLL_SPEED = 10;
 const static float ZOOM_SPEED = 3;
 const static float NODE_MIN_SIZE_Y = 60;
