@@ -4,7 +4,6 @@
 
 Generate callgraph for your C++ code. CallGraph is implemented in C++ with [ImGui](https://github.com/ocornut/imgui) (also integrated [ImGuiColorTextEdit](https://github.com/BalazsJako/ImGuiColorTextEdit)).
 Using [clang](https://clang.llvm.org/) for getting information about input source code.
-Still in development...
 
 ## Contributors:
 - [Momir Adžemović](https://github.com/Robotmurlock)
@@ -20,17 +19,12 @@ sudo apt-get install build-essential make clang-8 libclang-8-dev llvm-8-tools li
 
 ## Build and run
 ```
-git clone https://github.com/MATF-RS20/RS024-sourceexplorer.git
-cd RS024-sourceexplorer
+git clone https://github.com/djordjetane/CallGraph.git
+cd CallGraph
 make 
-./SourceExplorer
+./CallGraph
 ```
-If for some reasone make fails the first time, then run:
-```
-git checkout .
-make
-./SourceExplorer
-```
+
 ## Usage:
 ### 01. Open files
 Find a file you want to explore and open it.

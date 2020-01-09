@@ -156,7 +156,7 @@ MainWindow::MainWindow() {
   auto monitor = glfwGetPrimaryMonitor();
   auto mode = glfwGetVideoMode(monitor);
 
-  window = glfwCreateWindow(mode->width, mode->height, "Source Explorer", NULL, NULL);
+  window = glfwCreateWindow(mode->width, mode->height, "CallGraph", NULL, NULL);
   if (window == NULL) {
     exit(EXIT_FAILURE);
   }
