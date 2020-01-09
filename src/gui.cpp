@@ -573,12 +573,7 @@ void FunctionListFilteringWindow::Draw() {
                ImGuiWindowFlags_NoCollapse);
   if (ImGui::IsWindowHovered() && !ImGui::IsWindowFocused())
     ImGui::SetWindowFocus();
-  ImGui::Text(
-      "Filter usage:\n"
-      "  \"\"         display all lines\n"
-      "  \"xxx\"      display lines containing \"xxx\"\n"
-      "  \"xxx,yyy\"  display lines containing \"xxx\" or \"yyy\"\n"
-      "  \"-xxx\"     hide lines containing \"xxx\"");
+
   filter.Draw();
 
   if (functions) {
